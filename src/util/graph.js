@@ -194,6 +194,7 @@ class Graph {
    */
   insertNode (nodeModel, type, properties) {
     // todo: 几种情况的处理：1.一个节点连出多条边 2.一个节点的入口连入多条边 3.线的回连
+    if (!nodeModel || !nodeModel.data) return
     const lf = this.lf
     if (nodeModel.data.type === logicLine.type) { // 如果是基于边插入节点，则在此边之后新增节点
       const edge = nodeModel

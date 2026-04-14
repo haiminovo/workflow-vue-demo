@@ -73,6 +73,10 @@ export default {
     }
   },
   methods: {
+    getModelById(id) {
+      if (!id) return null
+      return this.lf.getNodeModelById(id) || this.lf.getEdgeModelById(id) || null
+    },
     hide() {
       const key = this.modelId
       if (!key) return
@@ -121,7 +125,9 @@ export default {
         }
       }
       if (this.modelId) {
-        nodeData.model = this.lf.getNodeModelById(this.modelId)
+        const model = this.getModelById(this.modelId)
+        if (!model) return
+        nodeData.model = model
         this.lf.graphModel.eventCenter.emit('node:add-node', nodeData)
       } else {
         this.addNodeInPosition(nodeData)
@@ -145,14 +151,16 @@ export default {
         }
       }
       if (this.modelId) {
-        nodeData.model = this.lf.getNodeModelById(this.modelId)
+        const model = this.getModelById(this.modelId)
+        if (!model) return
+        nodeData.model = model
         this.lf.graphModel.eventCenter.emit(`node:add-node`, nodeData)
       }
     },
     // 连接至已有节点
     connectToNode(e) {
       this.hide()
-      const model = this.modelId && this.lf.getNodeModelById(this.modelId)
+      const model = this.modelId && this.getModelById(this.modelId)
       model && this.graph.connectToNode(e, model)
     }
   }
