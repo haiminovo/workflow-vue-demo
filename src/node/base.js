@@ -59,6 +59,7 @@ class BaseNodeModel extends HtmlNodeModel {
   setAttributes() {
     this.width = NODE_WIDTH
     this.height = NODE_HEIGHT + 13 * 2
+    this.setZIndex(1000)
     this.text.editable = false
     this.sourceRules.push({
       message: '只允许从右边的锚点连出',

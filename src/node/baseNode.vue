@@ -355,7 +355,6 @@ export default {
   width: 24px;
   height: 28px;
   align-items: center;
-  pointer-events: none;
 
   span {
     border-radius: 50%;
@@ -365,7 +364,6 @@ export default {
     display: flex;
     align-items: center;
     z-index: 100;
-    pointer-events: auto;
   }
 
   .next-icon {
