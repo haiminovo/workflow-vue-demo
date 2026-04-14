@@ -68,7 +68,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-/deep/.el-cascader {
+:deep(.el-cascader ) {
   width: 100%;
 }
 </style>

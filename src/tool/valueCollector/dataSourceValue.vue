@@ -157,7 +157,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-/deep/.el-select {
+:deep(.el-select ) {
   width: 100%;
 }
 .field-selector {

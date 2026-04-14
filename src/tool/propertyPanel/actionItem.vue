@@ -3,7 +3,7 @@
     <div class="header">
       {{ title }}
       <span class="delete" style="cursor: pointer" @click="handleDelete">
-        <i class="el-icon-delete"></i>
+        <span class="delete-icon">x</span>
         删除
       </span>
     </div>
@@ -40,17 +40,15 @@
 
 <script>
 import valueCollector from '../valueCollector/index.vue'
+import { emitModelValue, getModelValue } from '../../util/modelValue'
 export default {
   props: {
     lf: Object,
     context: Object,
     current: Object,
+    modelValue: [String, Number, Boolean, Object, Array],
     value: [String, Number, Boolean, Object, Array],
     title: String
-  },
-  model: {
-    prop: 'value',
-    event: 'change'
   },
   data() {
     return {
@@ -59,10 +57,20 @@ export default {
     }
   },
   watch: {
+    modelValue: {
+      deep: true,
+      immediate: true,
+      handler() {
+        const nv = getModelValue(this.$props) || {}
+        this.propName = nv.key
+        this.val = nv.value
+      }
+    },
     value: {
       deep: true,
       immediate: true,
       handler(nv) {
+        if (this.modelValue !== undefined) return
         this.propName = nv.key
         this.val = nv.value
       }
@@ -111,7 +119,7 @@ export default {
     handlePropChange(e) {
       this.propName = e
       this.val = {}
-      this.$emit('change', {
+      emitModelValue(this, {
         key: this.currentProp.name,
         keyDefine: this.currentProp.description,
         keyType: this.currentProp.propType,
@@ -121,7 +129,7 @@ export default {
     },
     handleValueChange(e) {
       this.val = e
-      this.$emit('change', {
+      emitModelValue(this, {
         key: this.currentProp.name,
         keyDefine: this.currentProp.description,
         keyType: this.currentProp.propType,
@@ -165,10 +173,17 @@ export default {
     color: #2961ef;
   }
 }
-/deep/.el-col {
+.delete-icon {
+  display: inline-block;
+  width: 12px;
+  margin-right: 2px;
+  font-weight: 700;
+  text-align: center;
+}
+:deep(.el-col ) {
   display: flex;
 }
-/deep/.el-select {
+:deep(.el-select ) {
   flex: 1;
 }
 .value-select {

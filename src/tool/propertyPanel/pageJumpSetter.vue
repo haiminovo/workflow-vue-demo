@@ -110,9 +110,10 @@
           @change="handleRouteParamValueChange($event, idx)"
         ></value-collector>
 
-        <el-link class="delete-button" type="danger" icon="el-icon-delete" @click="deleteParam(idx)"></el-link>
+        <el-link class="delete-button" type="danger" :underline="false" @click="deleteParam(idx)">删除</el-link>
       </div>
-      <el-link type="primary" class="add-button" icon="el-icon-circle-plus-outline" @click="addParam">
+      <el-link type="primary" class="add-button" :underline="false" @click="addParam">
+        <span class="action-icon">+</span>
         添加参数
       </el-link>
     </div>
@@ -123,6 +124,7 @@
 import qs from 'qs'
 import { mapKeys } from 'lodash-es'
 import valueCollector from '../valueCollector/index.vue'
+import { emitModelValue, getModelValue } from '../../util/modelValue'
 
 export default {
   components: {
@@ -132,14 +134,14 @@ export default {
     lf: Object,
     context: Object,
     current: Object,
+    modelValue: {
+      type: Object,
+      default: undefined
+    },
     value: {
       type: Object,
       default: () => {}
     }
-  },
-  model: {
-    prop: 'value',
-    event: 'change'
   },
   data() {
     return {
@@ -157,7 +159,7 @@ export default {
     }
   },
   watch: {
-    value: {
+    currentValue: {
       deep: true,
       immediate: true,
       handler(nv) {
@@ -173,6 +175,11 @@ export default {
   async mounted() {
     this.sudaPageList = []
   },
+  computed: {
+    currentValue() {
+      return getModelValue(this.$props) || {}
+    }
+  },
   methods: {
     // 获取速搭配置页面列表
     addParam() {
@@ -187,7 +194,7 @@ export default {
     },
     handleParamChange(key, val) {
       this.params[key] = val
-      this.$emit('change', this.params)
+      emitModelValue(this, this.params)
 
       // 切换类型时重置其他内容
       if (key === 'jumpType') {
@@ -251,17 +258,16 @@ export default {
         this.params.routeParams = []
       }
 
-      this.$emit('change', this.params)
+      emitModelValue(this, this.params)
     },
     handleRouteParamKeyChange(e, idx) {
       this.params.routeParams[idx].key = e
 
-      this.$emit('change', this.params)
+      emitModelValue(this, this.params)
     },
     handleRouteParamValueChange(e, idx) {
       this.params.routeParams[idx].value = e
-      const params = {}
-      this.$emit('change', this.params)
+      emitModelValue(this, this.params)
     }
   }
 }
@@ -316,5 +322,12 @@ export default {
 }
 .add-button {
   margin-top: 10px;
+}
+.action-icon {
+  display: inline-block;
+  width: 14px;
+  margin-right: 4px;
+  font-weight: 700;
+  text-align: center;
 }
 </style>

@@ -132,7 +132,7 @@
           @change="handleErrorChange"
           active-text="是"
           inactive-text="否"
-          size="mini"
+          size="small"
         ></el-switch>
       </div>
     </div>
@@ -143,20 +143,21 @@
 import paramCollector from "../paramCollector/index.vue";
 import { requestMethodMap } from "../../util/typeMap";
 import CurlImport from "./curlImport.vue";
+import { emitModelValue, getModelValue } from "../../util/modelValue";
 
 export default {
   props: {
     lf: Object,
     context: Object,
     current: Object,
+    modelValue: {
+      type: Object,
+      default: undefined,
+    },
     value: {
       type: Object,
       default: () => {},
     },
-  },
-  model: {
-    prop: "value",
-    event: "change",
   },
   data() {
     return {
@@ -179,39 +180,32 @@ export default {
     };
   },
   watch: {
-    "value.fetchMode": {
-      immediate: true,
-      async handler(nv) {
-        this.fetchMode = nv || "direct";
-      },
-    },
-    "value.id": {
-      immediate: true,
-      async handler(nv) {
-        if (this.value.fetchMode === "custom") return;
-        this.apiId = nv;
-        if (!nv) return;
-        if (!(this.options && this.options.length)) {
-          await this.getApiOptions();
-        }
-        this.getParamList();
-      },
-    },
-    value: {
+    currentValue: {
       immediate: true,
       deep: true,
       async handler(nv) {
+        this.fetchMode = (nv && nv.fetchMode) || "direct";
         this.queryParams = (nv && nv.queryParams) || [];
         this.bodyParams = (nv && nv.bodyParams) || [];
         this.headerParams = (nv && nv.headerParams) || [];
-        this.continueOnError = nv.continueOnError;
-        if (this.value.fetchMode === "custom") {
+        this.continueOnError = nv && nv.continueOnError;
+        if (this.fetchMode === "custom") {
           this.requestName = nv && nv.name;
           this.requestUrl = nv && nv.url;
           this.requestMethod = nv && nv.method;
           this.queryParamList = this.queryParams;
           this.bodyParamList = this.bodyParams;
+          this.apiId = "";
+          return;
         }
+        this.apiId = (nv && nv.id) || "";
+        if (!this.apiId) {
+          return;
+        }
+        if (!(this.options && this.options.length)) {
+          await this.getApiOptions();
+        }
+        this.getParamList();
       },
     },
   },
@@ -219,6 +213,9 @@ export default {
     this.getApiOptions();
   },
   computed: {
+    currentValue() {
+      return getModelValue(this.$props) || {};
+    },
     api() {
       return this.apiList.find((item) => item.id === this.apiId) || {};
     },
@@ -288,7 +285,7 @@ export default {
           continueOnError: this.continueOnError,
         };
       }
-      this.$emit("change", ds);
+      emitModelValue(this, ds);
     },
     reset() {
       this.queryParamList = [];

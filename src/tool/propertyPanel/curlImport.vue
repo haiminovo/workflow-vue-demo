@@ -1,14 +1,16 @@
 <template>
 <div class="curl-import">
   <el-button class="import-btn" type="text" @click="$_openDialog">从cURL语句导入</el-button>
-  <el-dialog :visible.sync="dialogInfo.visible" destroy-on-close title="cURL语句导入" custom-class="ds-dialog__import" append-to-body>
+  <el-dialog v-model="dialogInfo.visible" destroy-on-close title="cURL语句导入" class="ds-dialog__import" append-to-body>
     <div>
       <el-input type="textarea" v-model="dialogInfo.value" :autosize="{minRows: 8}"></el-input>
     </div>
-    <div class="btns" slot="footer">
-      <el-button size="small" @click="$_cancelImport">取消</el-button>
-      <el-button size="small" type="primary" @click="$_confirmImport">导入</el-button>
-    </div>
+    <template #footer>
+      <div class="btns">
+        <el-button size="small" @click="$_cancelImport">取消</el-button>
+        <el-button size="small" type="primary" @click="$_confirmImport">导入</el-button>
+      </div>
+    </template>
   </el-dialog>
 </div>
 </template>
@@ -187,7 +189,7 @@ export default {
     border: 0;
     font-size: 12px;
   }
-  /deep/ .ds-dialog__import {
+  :deep(.ds-dialog__import ) {
     width: 800px;
     .el-dialog__body {
 

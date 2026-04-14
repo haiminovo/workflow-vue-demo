@@ -3,7 +3,6 @@
     class="logic-panel"
     v-loading="loading"
     element-loading-text="加载中..."
-    element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 1)"
   >
     <div ref="container" class="logic-container"></div>
@@ -41,6 +40,7 @@ import { genStartPos, genId } from "../util/calculate";
 import { NODE_SPACE_X, NODE_SPACE_Y, EDITOR_EVENT } from "../util/constant";
 import { getNodeName } from "../util/node";
 import Popover from "../tool/popover/popover";
+import { createElementApp } from "../util/vueMount";
 
 export default {
   name: 'LogicPanel',
@@ -265,19 +265,14 @@ export default {
       popover.registerPopover("tip1", {
         // TODO: 后续支持传递属性
         render: (rootEl, data) => {
-          const vm = new Vue({
-            render: (h) =>
-              h(insertMenu, {
-                props: {
-                  lf: this.lf,
-                  context: this.context,
-                  graph: this.graph,
-                  model: this.currentModel,
-                  showConnectBlock: data.props.showConnectBlock,
-                },
-              }),
+          const app = createElementApp(insertMenu, {
+            lf: this.lf,
+            context: this.context,
+            graph: this.graph,
+            model: this.currentModel,
+            showConnectBlock: data.props.showConnectBlock,
           });
-          vm.$mount(rootEl);
+          app.mount(rootEl);
         },
       });
     },
@@ -466,7 +461,7 @@ export default {
 
 /*自定义锚点样式*/
 .logic-panel {
-  /deep/ .custom-anchor {
+  :deep(.custom-anchor ) {
     stroke: #2961ef;
     stroke-width: 1;
     fill: #fff;
@@ -474,34 +469,34 @@ export default {
     rx: 3;
     ry: 3;
   }
-  /deep/ .custom-anchor:hover {
+  :deep(.custom-anchor:hover ) {
     stroke: #2961ef;
     stroke-width: 1;
     fill: #fff;
   }
-  /deep/ .lf-node-not-allow .custom-anchor:hover {
+  :deep(.lf-node-not-allow .custom-anchor:hover ) {
     stroke: #999;
     fill: #d9d9d9;
     cursor: not-allowed;
   }
-  /deep/ .incomming-anchor {
+  :deep(.incomming-anchor ) {
     stroke: #2961ef;
     cursor: default;
   }
-  /deep/ .outgoing-anchor {
+  :deep(.outgoing-anchor ) {
     stroke: #2961ef;
   }
-  /deep/ .lf-node-not-allow .basic-node {
+  :deep(.lf-node-not-allow .basic-node ) {
     cursor: not-allowed;
   }
-  /deep/ .lf-control-item i {
+  :deep(.lf-control-item i ) {
     font-size: 20px;
     font-weight: 600;
   }
-  /deep/ .lf-multiple-select {
+  :deep(.lf-multiple-select ) {
     background: rgba(224, 80, 10, 0.2);
   }
-  /deep/ .lf-grid > svg {
+  :deep(.lf-grid > svg ) {
     background-image: url("../assets/img/grid.svg");
     background-size: 50px 50px;
     background-repeat: repeat;

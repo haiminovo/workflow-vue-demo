@@ -18,7 +18,7 @@
       class="add-button"
       @click="addAction"
     >
-      <i class="el-icon-circle-plus-outline"></i>
+      <span class="action-add-icon">+</span>
       添加行为
     </el-link>
   </div>
@@ -26,16 +26,14 @@
 
 <script>
 import actionItem from './actionItem.vue'
+import { emitModelValue, getModelValue } from '../../util/modelValue'
 export default {
   props: {
     lf: Object,
     context: Object,
     current: Object,
+    modelValue: [String, Number, Boolean, Object, Array],
     value: [String, Number, Boolean, Object, Array]
-  },
-  model: {
-    prop: "value",
-    event: "change"
   },
   data () {
     return {
@@ -44,10 +42,31 @@ export default {
     }
   },
   watch: {
+    modelValue: {
+      deep: true,
+      immediate: true,
+      handler() {
+        const nv = getModelValue(this.$props)
+        if (nv && nv.length) {
+          this.actions = nv
+        } else {
+          this.actions = [
+            {
+              key: '',
+              keyDefine: '',
+              keyType: '',
+              valueDefine: '',
+              value: {},
+            }
+          ]
+        }
+      }
+    },
     value: {
       deep: true,
       immediate: true,
       handler (nv) {
+        if (this.modelValue !== undefined) return
         if (nv && nv.length) {
           this.actions = nv
         } else {
@@ -67,10 +86,11 @@ export default {
   methods: {
     handleActionChange(e, index) {
       this.actions[index] = e
-      this.$emit('change', this.actions)
+      emitModelValue(this, this.actions)
     },
     handleActionDelete(index) {
       this.actions.splice(index, 1)
+      emitModelValue(this, this.actions)
     },
     addAction() {
       if (this.actions.length >= 6) {
@@ -85,6 +105,7 @@ export default {
         value: {},
       }
       this.actions.push(tempAction)
+      emitModelValue(this, this.actions)
     }
   },
   components: {
@@ -99,5 +120,12 @@ export default {
 }
 .action-item {
   margin-bottom: 10px;
+}
+.action-add-icon {
+  display: inline-block;
+  width: 14px;
+  margin-right: 4px;
+  font-weight: 700;
+  text-align: center;
 }
 </style>

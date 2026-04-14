@@ -3,19 +3,22 @@
     <!-- <i class="el-icon-setting value-selector-icon"></i> -->
     <el-dropdown trigger="click" size="small" class="type-dropdown" placement="top" @command="handleCommand">
       <span class="value-selector-prefix">
-        <i class="value-selector-icon" :class="['value-selector-icon', typeMap[type] && typeMap[type].icon]"></i>
+        <span class="value-selector-icon">
+          {{ getTypeSymbol(type) }}
+        </span>
       </span>
-      <el-dropdown-menu slot="dropdown">
-        <el-dropdown-item
-          v-for="item in typeOptions"
-          :key="item.value"
-          :command="item.value"
-          :icon="item.icon"
-          :class="item.value === type && 'selected'"
-        >
-          {{ item.label }}
-        </el-dropdown-item>
-      </el-dropdown-menu>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item
+            v-for="item in typeOptions"
+            :key="item.value"
+            :command="item.value"
+            :class="item.value === type && 'selected'"
+          >
+            {{ item.label }}
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
     </el-dropdown>
     <div class="value-selector">
       <option-value v-show="type === 'option'" :value="val" @change="handleChange" :options="options"></option-value>
@@ -130,6 +133,19 @@ export default {
         type: e,
         dataType: 'string'
       })
+    },
+    getTypeSymbol(type) {
+      const symbolMap = {
+        option: 'O',
+        input: 'I',
+        component: 'C',
+        componentProp: 'P',
+        dataSource: 'DS',
+        dataConvert: 'DC',
+        urlParam: 'U',
+        initParam: 'IN'
+      }
+      return symbolMap[type] || '?'
     }
   },
   components: {
@@ -146,20 +162,20 @@ export default {
 </script>
 
 <style scoped lang="less">
-/deep/.el-tabs__item {
+:deep(.el-tabs__item ) {
   font-size: 10px;
   padding: 0 10px;
   line-height: 30px;
   height: 30px;
 }
-/deep/.el-select {
+:deep(.el-select ) {
   width: 100%;
 }
-/deep/.el-input__inner {
+:deep(.el-input__inner ) {
   border-radius: 0 4px 4px 0;
 }
 
-/deep/.el-dropdown-menu__item {
+:deep(.el-dropdown-menu__item ) {
   &.selected {
     color: #2961ef;
   }
@@ -186,8 +202,13 @@ export default {
   border-radius: 4px 0 0 4px;
 }
 .value-selector-icon {
-  display: inline-block;
-  font-size: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
   &:hover {
     color: #2961ef;

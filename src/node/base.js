@@ -2,6 +2,7 @@
 import { HtmlNode, HtmlNodeModel, h } from '@logicflow/core'
 import { NODE_WIDTH, NODE_HEIGHT } from '../util/constant'
 import baseNode from './baseNode.vue'
+import { createElementApp } from '../util/vueMount'
 
 const NEXT_X_DISTANCE = 200
 const NEXT_Y_DISTANCE = 100
@@ -10,7 +11,7 @@ class BaseNodeView extends HtmlNode {
   constructor(props) {
     super(props)
     this.root = document.createElement('div')
-    this.vueComponent = baseNode
+    this.vm = createElementApp(baseNode)
   }
   shouldUpdate() {
     const data = {
@@ -23,25 +24,24 @@ class BaseNodeView extends HtmlNode {
     return true
   }
   setHtml(rootEl) {
-    rootEl.appendChild(this.root)
-    if (this.vm) {
-      this.vm.$mount(this.root)
-    } else {
-      this.vm = new Vue({
-        render: (h) =>
-          h(this.vueComponent, {
-            props: {
-              model: this.props.model,
-              graphModel: this.props.graphModel,
-              disabled: this.props.graphModel.editConfigModel.isSilentMode,
-              isSelected: this.props.model.isSelected,
-              isHovered: this.props.model.isHovered,
-              properties: this.props.model.getProperties()
-            }
-          })
-      })
-      this.vm.$mount(this.root)
+    if (!rootEl.contains(this.root)) {
+      rootEl.innerHTML = ''
+      rootEl.appendChild(this.root)
     }
+    rootEl.style.width = `${this.props.model.width}px`
+    rootEl.style.height = `${this.props.model.height}px`
+    this.root.style.width = '100%'
+    this.root.style.height = '100%'
+    this.root.style.display = 'block'
+    this.vm.update({
+      model: this.props.model,
+      graphModel: this.props.graphModel,
+      disabled: this.props.graphModel.editConfigModel.isSilentMode,
+      isSelected: this.props.model.isSelected,
+      isHovered: this.props.model.isHovered,
+      properties: this.props.model.getProperties()
+    })
+    this.vm.mount(this.root)
   }
   getAnchorShape(anchorData) {
     const { x, y, type } = anchorData

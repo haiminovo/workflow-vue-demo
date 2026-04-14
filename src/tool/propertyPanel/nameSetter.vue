@@ -7,8 +7,11 @@
 </template>
 
 <script>
+import { emitModelValue, getModelValue } from '../../util/modelValue'
+
 export default {
   props: {
+    modelValue: String,
     value: String
   },
   data() {
@@ -17,18 +20,27 @@ export default {
     }
   },
   watch: {
+    modelValue: {
+      immediate: true,
+      deep: true,
+      handler() {
+        this.val = getModelValue(this.$props)
+      }
+    },
     value: {
       immediate: true,
       deep: true,
       handler(nv) {
-        this.val = nv
+        if (this.modelValue === undefined) {
+          this.val = nv
+        }
       }
     }
   },
   methods: {
     handleChange(e) {
       this.val = e
-      this.$emit('change', e)
+      emitModelValue(this, e)
     }
   }
 }

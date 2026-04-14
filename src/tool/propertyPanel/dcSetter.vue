@@ -21,9 +21,10 @@
           @change="handleResourceValueChange($event, idx)"
         ></value-collector>
 
-        <el-link class="delete-button" type="danger" icon="el-icon-delete" @click="deleteParam(idx)"></el-link>
+        <el-link class="delete-button" type="danger" :underline="false" @click="deleteParam(idx)">删除</el-link>
       </div>
-      <el-link type="primary" class="add-button" icon="el-icon-circle-plus-outline" @click="addParam">
+      <el-link type="primary" class="add-button" :underline="false" @click="addParam">
+        <span class="action-icon">+</span>
         添加变量
       </el-link>
     </div>
@@ -40,6 +41,7 @@
 import _ from 'lodash'
 // import CodeFlask from 'codeflask'
 import valueCollector from '../valueCollector/index.vue'
+import { emitModelValue, getModelValue } from '../../util/modelValue'
 
 export default {
   components: {
@@ -48,17 +50,17 @@ export default {
   props: {
     context: Object,
     lf: Object,
+    modelValue: {
+      type: Object,
+      default: undefined
+    },
     value: {
       type: Object,
       default: () => {}
     }
   },
-  model: {
-    prop: 'value',
-    event: 'change'
-  },
   watch: {
-    value: {
+    currentValue: {
       deep: true,
       immediate: true,
       handler(nv) {
@@ -67,6 +69,11 @@ export default {
           ...nv
         }
       }
+    }
+  },
+  computed: {
+    currentValue() {
+      return getModelValue(this.$props) || {}
     }
   },
   data() {
@@ -112,11 +119,11 @@ export default {
     },
     handleResourceKeyChange(e, idx) {
       this.params.convertList[idx].key = e
-      this.$emit('change', this.params)
+      emitModelValue(this, this.params)
     },
     handleResourceValueChange(e, idx) {
       this.params.convertList[idx].value = e
-      this.$emit('change', this.params)
+      emitModelValue(this, this.params)
     }
   }
 }
@@ -175,6 +182,13 @@ export default {
 }
 .add-button {
   margin-top: 10px;
+}
+.action-icon {
+  display: inline-block;
+  width: 14px;
+  margin-right: 4px;
+  font-weight: 700;
+  text-align: center;
 }
 
 #my-editor {

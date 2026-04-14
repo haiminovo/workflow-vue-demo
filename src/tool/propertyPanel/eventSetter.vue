@@ -23,23 +23,26 @@
 </template>
 
 <script>
+import { emitModelValue, getModelValue } from '../../util/modelValue'
+
 export default {
   props: {
     lf: Object,
     context: Object,
     current: Object,
+    modelValue: {
+      type: Object,
+      default: undefined
+    },
     value: {
       type: Object,
       default: () => {}
     }
   },
-  model: {
-    prop: "value",
-    event: "change"
-  },
   computed: {
     selectValue () {
-      return this.value.key
+      const value = getModelValue(this.$props) || {}
+      return value.key
     },
     // 值选项
     eventOptions () { 
@@ -61,7 +64,7 @@ export default {
         keyDefine: target.label,
         key: target.value,
       }
-      this.$emit('change', event)
+      emitModelValue(this, event)
     }
   },
 }

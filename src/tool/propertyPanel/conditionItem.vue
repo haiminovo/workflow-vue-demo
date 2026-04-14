@@ -3,7 +3,7 @@
     <div class="header">
       {{ title }}
       <span class="delete" style="cursor: pointer" @click="handleDelete">
-        <i class="el-icon-delete"></i>
+        <span class="delete-icon">x</span>
         删除
       </span>
     </div>
@@ -46,18 +46,16 @@
 <script>
 import valueCollector from '../valueCollector/index.vue'
 import { comparisonOperators } from '../../util/expression'
+import { emitModelValue, getModelValue } from '../../util/modelValue'
 
 export default {
   props: {
     lf: Object,
     context: Object,
     current: Object,
+    modelValue: [String, Number, Boolean, Object, Array],
     value: [String, Number, Boolean, Object, Array],
     title: String
-  },
-  model: {
-    prop: 'value',
-    event: 'change'
   },
   data() {
     return {
@@ -70,10 +68,18 @@ export default {
     }
   },
   watch: {
+    modelValue: {
+      deep: true,
+      immediate: true,
+      handler() {
+        this.condition = getModelValue(this.$props) || {}
+      }
+    },
     value: {
       deep: true,
       immediate: true,
       handler(nv) {
+        if (this.modelValue !== undefined) return
         this.condition = nv
       }
     },
@@ -89,14 +95,14 @@ export default {
   methods: {
     handleKeyChange(e) {
       this.condition.key = e
-      this.$emit('change', this.condition)
+      emitModelValue(this, this.condition)
     },
     handleValueChange(e) {
       this.condition.value = e
-      this.$emit('change', this.condition)
+      emitModelValue(this, this.condition)
     },
     handleOperatorChange() {
-      this.$emit('change', this.condition)
+      emitModelValue(this, this.condition)
     },
     handleDelete() {
       this.$emit('delete')
@@ -134,10 +140,17 @@ export default {
     color: #2961ef;
   }
 }
-/deep/.el-col {
+.delete-icon {
+  display: inline-block;
+  width: 12px;
+  margin-right: 2px;
+  font-weight: 700;
+  text-align: center;
+}
+:deep(.el-col ) {
   display: flex;
 }
-/deep/.el-select {
+:deep(.el-select ) {
   flex: 1;
 }
 .value-select {

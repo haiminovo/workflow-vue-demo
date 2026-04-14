@@ -13,9 +13,8 @@
         :label="item.label"
         size="small"
         :value="item.value"
-        @mouseenter.native="handleMouseEnter(item.value)"
       >
-        <span style="float: left">
+        <span style="float: left" @mouseenter="handleMouseEnter(item.value)">
           <b>{{ item.name }}</b>
         </span>
       </el-option>
@@ -183,7 +182,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-/deep/.el-select {
+:deep(.el-select ) {
   width: 100%;
 }
 .prop-select {

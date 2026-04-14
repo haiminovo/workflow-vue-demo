@@ -4,7 +4,7 @@
       placement="right"
       width="200"
       trigger="click"
-      v-model="popVisible"
+      v-model:visible="popVisible"
       v-if="properties.condition && properties.condition && properties.condition.conditions && properties.condition.conditions.length"
     >
       <div class="popover-content">
@@ -27,11 +27,13 @@
           插入节点
         </div>
       </div>
-      <div class="line-icon" slot="reference" :class="isSelected && 'selected'" @click.stop="handleIconClick">
-        <img class="icon" src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/edge_condition.png" alt="" />
-      </div>
+      <template #reference>
+        <div class="line-icon" :class="isSelected && 'selected'" @click.stop="handleIconClick">
+          <img class="icon" src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/edge_condition.png" alt="" />
+        </div>
+      </template>
     </el-popover>
-    <el-popover placement="right" width="100" trigger="click" v-model="popVisible" v-else>
+    <el-popover placement="right" width="100" trigger="click" v-model:visible="popVisible" v-else>
       <div class="popover-content">
         <div class="popover-item" @click="goCondition">
           <img class="icon" src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_add_option.png" alt="" />
@@ -42,15 +44,16 @@
           插入节点
         </div>
       </div>
-      <div
-        class="line-icon"
-        :class="isSelected && 'selected'"
-        slot="reference"
-        v-show="isSelected || isHovered"
-        @click.stop="handleIconClick"
-      >
-        <img class="icon" src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/edge_add.png" alt="" />
-      </div>
+      <template #reference>
+        <div
+          class="line-icon"
+          :class="isSelected && 'selected'"
+          v-show="showLineIcon"
+          @click.stop="handleIconClick"
+        >
+          <img class="icon" src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/edge_add.png" alt="" />
+        </div>
+      </template>
     </el-popover>
   </div>
 </template>
@@ -67,6 +70,11 @@ export default {
   data() {
     return {
       popVisible: false
+    }
+  },
+  computed: {
+    showLineIcon() {
+      return this.isSelected || this.isHovered || this.popVisible
     }
   },
   mounted() {

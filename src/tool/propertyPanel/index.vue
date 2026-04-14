@@ -2,15 +2,13 @@
   <el-drawer
     :modal="false"
     :append-to-body="false"
-    :wrapperClosable="true"
     :destroy-on-close="true"
     style="position: absolute"
     direction="rtl"
     class="properties-panel"
-    width="100%"
     :size="500"
-    @closeDrawer="closeDrawer"
-    :visible.sync="showDrawer"
+    @close="closeDrawer"
+    v-model="showDrawer"
   >
     <div v-if="panelType !== 'condition'">
       <div class="setter-title">设置名称</div>
@@ -282,7 +280,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-/deep/.el-drawer {
+:deep(.el-drawer ) {
   padding: 12px 12px;
   box-sizing: border-box;
   height: 100%;
@@ -314,7 +312,7 @@ export default {
     background: transparent;
   }
 }
-/deep/.el-drawer__header {
+:deep(.el-drawer__header ) {
   margin: 0;
   height: 0;
 }

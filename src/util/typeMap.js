@@ -2,42 +2,42 @@ export const valueCollectorMap = {
   option: {
     label: '默认选项',
     value: 'option',
-    icon: 'el-icon-folder-opened'
+    icon: 'option'
   },
   input: {
     label: '手动输入',
     value: 'input',
-    icon: 'el-icon-edit-outline'
+    icon: 'input'
   },
   component: {
     label: '页面组件值',
     value: 'component',
-    icon: 'el-icon-cpu'
+    icon: 'component'
   },
   componentProp: {
     label: '页面组件属性值',
     value: 'componentProp',
-    icon: 'el-icon-connection'
+    icon: 'component-prop'
   },
   dataSource: {
     label: '数据节点返回值',
     value: 'dataSource',
-    icon: 'el-icon-receiving'
+    icon: 'data-source'
   },
   dataConvert: {
     label: '转换节点返回值',
     value: 'dataConvert',
-    icon: 'el-icon-s-operation'
+    icon: 'data-convert'
   },
   urlParam: {
     label: '路由参数属性值',
     value: 'urlParam',
-    icon: 'el-icon-link'
+    icon: 'url-param'
   },
   initParam: {
     label: '宿主系统变量属性值',
     value: 'initParam',
-    icon: 'el-icon-attract'
+    icon: 'init-param'
   }
 }
 

@@ -2,7 +2,7 @@
   <div>
     <el-table :data="paramList" :border="true" type="selection" style="width: 100%">
       <el-table-column prop="key" label="KEY" width="160">
-        <template slot-scope="scope">
+        <template #default="scope">
           <div v-if="scope.row.keyType !== 'custom'">
             <span class="required">{{ scope.row.required ? '*' : '' }}</span>
             {{ scope.row.key }}
@@ -18,7 +18,7 @@
         </template>
       </el-table-column>
       <el-table-column prop="value" label="VALUE">
-        <template slot-scope="scope">
+        <template #default="scope">
           <value-collector
             class="value-select"
             :value="param[scope.row.key]"
@@ -32,20 +32,21 @@
         </template>
       </el-table-column>
       <el-table-column label="操作" width="60">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
-            icon="el-icon-delete"
             circle
             type="danger"
-            size="mini"
+            size="small"
             :disabled="!!scope.row.required"
             @click="removeParam(scope.row)"
-          ></el-button>
+          >
+            x
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
     <el-link type="primary" :underline="false" class="add-button" @click="addCustom">
-      <i class="el-icon-circle-plus-outline"></i>
+      <span class="collector-add-icon">+</span>
       添加自定义参数
     </el-link>
   </div>
@@ -54,19 +55,24 @@
 <script>
 import { findIndex } from 'lodash-es'
 import valueCollector from '../valueCollector/index.vue'
+import { emitModelValue, getModelValue } from '../../util/modelValue'
 export default {
   props: {
     context: Object,
     lf: Object,
     defaultValue: [String, Number, Boolean, Object, Array],
     paramList: Array,
+    modelValue: {
+      type: Array,
+      default: undefined
+    },
     value: {
       type: Array,
       default: () => []
     }
   },
   watch: {
-    value: {
+    currentValue: {
       deep: true,
       immediate: true,
       handler(nv) {
@@ -80,6 +86,11 @@ export default {
       list: [],
       types: ['input', 'dataSource', 'dataConvert', 'urlParam', 'initParam'],
       param: {}
+    }
+  },
+  computed: {
+    currentValue() {
+      return getModelValue(this.$props) || []
     }
   },
   methods: {
@@ -124,7 +135,7 @@ export default {
       this.param[key].paramType = row.paramType
       this.param[key].keyType = row.keyType
       const param = this.formatParam()
-      this.$emit('change', param)
+      emitModelValue(this, param)
     },
     handleKeyChange(e, row) {
       console.log('2', row)
@@ -132,14 +143,14 @@ export default {
       this.param[key] = row.value || {}
       this.param[key].keyType = row.keyType
       const param = this.formatParam()
-      this.$emit('change', param)
+      emitModelValue(this, param)
     },
     removeParam(row) {
       const idx = findIndex(this.paramList, (o) => o.key === row.key)
       this.paramList.splice(idx, 1)
       delete this.param[row.key]
       const param = this.formatParam()
-      this.$emit('change', param)
+      emitModelValue(this, param)
     },
     addCustom() {
       const item = {
@@ -158,7 +169,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-/deep/.el-select {
+:deep(.el-select ) {
   width: 100%;
 }
 .required {
@@ -169,5 +180,12 @@ export default {
 }
 .add-button {
   margin-top: 10px;
+}
+.collector-add-icon {
+  display: inline-block;
+  width: 14px;
+  margin-right: 4px;
+  font-weight: 700;
+  text-align: center;
 }
 </style>

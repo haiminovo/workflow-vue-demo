@@ -6,47 +6,45 @@
       </span>
       <span class="node-name">{{ getName() }}</span>
     </div>
-    <div
-      class="node-warning"
-      v-show="properties.warnings && properties.warnings.length"
-    >
+    <div class="node-warning" v-show="properties.warnings && properties.warnings.length">
       <el-popover class="item" placement="right" width="auto" :offset="-10" trigger="click" popper-class="logic-pop">
-        <abstract-content
-          :title="'配置异常'"
-          :content="properties.warnings"
-          :showButton="false"
-        ></abstract-content>
+        <abstract-content :title="'配置异常'" :content="properties.warnings" :showButton="false"></abstract-content>
         <div class="warning-tip">请及时调整，以免运行错误！</div>
-        <span class="icon" slot="reference" @mousedown.stop>
-          <i class="el-icon-warning"></i>
-        </span>
+        <template #reference>
+          <span class="icon" @mousedown.stop>
+            <WarningFilled />
+          </span>
+        </template>
       </el-popover>
     </div>
-    <div
-      class="node-option"
-      v-show="(properties.status === 'selected' || properties.status === 'hovered') && !disabled"
-      @mousedown.capture="selectNode"
-    >
+    <div class="node-option" v-show="showNodeActions"
+      @mousedown.capture="selectNode">
       <el-tooltip class="item" effect="dark" content="复制节点" placement="top" popper-class="logic-tooltip-pop">
         <span class="option-icon" @click="copyNode" @mousedown.stop>
           <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_copy.png" />
         </span>
       </el-tooltip>
       <el-tooltip class="item" effect="dark" content="信息概览" placement="top" popper-class="logic-tooltip-pop">
-        <el-popover placement="right" width="188" :offset="-10" trigger="click" popper-class="logic-pop">
-          <abstract-content
-            :title="getAbstract().title"
-            :content="getAbstract().content"
-            :showButton="getAbstract().showButton"
-            @config="goConfig()"
-          ></abstract-content>
-          <span class="option-icon" slot="reference" @mousedown.stop>
-            <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_abstract.png" />
-          </span>
+        <el-popover
+          v-model:visible="abstractVisible"
+          placement="right"
+          width="188"
+          :offset="-10"
+          trigger="click"
+          popper-class="logic-pop"
+        >
+          <abstract-content :title="getAbstract().title" :content="getAbstract().content"
+            :showButton="getAbstract().showButton" @config="goConfig()"></abstract-content>
+          <template #reference>
+            <span class="option-icon" @mousedown.stop>
+              <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_abstract.png" />
+            </span>
+          </template>
         </el-popover>
       </el-tooltip>
       <el-tooltip class="item" effect="dark" content="删除节点" placement="top" popper-class="logic-tooltip-pop">
         <el-popconfirm
+          v-model:visible="deleteVisible"
           hide-icon
           class="item"
           title="确认删除该节点吗？"
@@ -56,21 +54,24 @@
           @confirm="deleteNode"
           popper-class="logic-pop"
         >
-          <span class="option-icon" slot="reference" @mousedown.stop>
-            <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_delete.png" />
-          </span>
+          <template #reference>
+            <span class="option-icon" @mousedown.stop>
+              <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_delete.png" />
+            </span>
+          </template>
         </el-popconfirm>
       </el-tooltip>
     </div>
     <div class="node-next">
       <span v-show="properties.status === 'selected' || properties.status === 'hovered'" @mousedown.stop="handleNext">
-        <i class="el-icon-circle-plus next-icon"></i>
+        <CirclePlusFilled class="next-icon" />
       </span>
     </div>
   </div>
 </template>
 
 <script>
+import { CirclePlusFilled, WarningFilled } from '@element-plus/icons-vue'
 import { defaultLogo } from '../util/typeMap'
 import abstractContent from '../tool/abstractContent/index.vue'
 
@@ -86,11 +87,22 @@ export default {
   data() {
     return {
       showAddPop: false,
+      abstractVisible: false,
+      deleteVisible: false,
+    }
+  },
+  computed: {
+    showNodeActions() {
+      return !this.disabled && (
+        this.properties.status === 'selected' ||
+        this.properties.status === 'hovered' ||
+        this.abstractVisible ||
+        this.deleteVisible
+      )
     }
   },
   watch: {
     isHovered(nv) {
-      console.log('nv --->>>', nv);
       if (nv) {
         this.enterNode()
       } else {
@@ -115,7 +127,6 @@ export default {
       return (this.model.getNodeWarning && this.model.getNodeWarning()) || {}
     },
     handleNext() {
-      console.log('this.graphModel --->>>', this.graphModel)
       const nodeX = this.model.x
       const nodeY = this.model.y
       const x = nodeX + this.model.width / 2
@@ -152,8 +163,6 @@ export default {
       this.graphModel.eventCenter.emit(`node:update-model`, this.model)
     },
     enterNode() {
-      console.log('this.model --->>', this.model)
-      console.log('this.properties --->>', this.properties)
       if (this.model.properties && this.model.properties.status === 'selected') return
       this.model.setProperties({
         status: 'hovered'
@@ -169,14 +178,18 @@ export default {
       this.graphModel.eventCenter.emit(`node:copy-node`, this.model)
     },
     deleteNode() {
+      this.deleteVisible = false
       this.graphModel.eventCenter.emit(`node:delete-node`, this.model)
     },
     goConfig() {
+      this.abstractVisible = false
       this.graphModel.eventCenter.emit(`node:select-click`, this.model)
     }
   },
   components: {
-    abstractContent
+    abstractContent,
+    CirclePlusFilled,
+    WarningFilled
   }
 }
 </script>
@@ -185,12 +198,15 @@ export default {
 .base {
   --node-primary-color: #2961ef;
 }
+
 .event {
   --node-primary-color: #683ced;
 }
+
 .common {
   --node-primary-color: #26c9f2;
 }
+
 .node-wrap {
   width: 100%;
   height: 100%;
@@ -207,6 +223,7 @@ export default {
   color: #1f3252;
   line-height: 16px;
   font-weight: 400;
+
   // overflow: hidden;
   &.hovered {
     .node-title {
@@ -214,12 +231,14 @@ export default {
       border: 1px solid var(--node-primary-color);
     }
   }
+
   &.selected {
     .node-title {
       border: 2px solid var(--node-primary-color);
       box-shadow: 0 0 6px 0 rgba(41, 97, 239, 0.5);
     }
   }
+
   &.execute-failed {
     .node-title {
       border: 2px solid rgba(255, 77, 79, 0.7);
@@ -239,6 +258,7 @@ export default {
   border-radius: 4px;
   background: #fff;
   overflow: hidden;
+
   .node-icon {
     display: inline-block;
     width: 26px;
@@ -248,6 +268,7 @@ export default {
     align-items: center;
     background: var(--node-primary-color);
   }
+
   img {
     width: 14px;
     height: 14px;
@@ -255,6 +276,7 @@ export default {
     transform: translateX(-100px);
   }
 }
+
 .executed {
   .node-title {
     background: rgb(79 235 151 / 80%);
@@ -277,10 +299,12 @@ export default {
   height: 14px;
   overflow: hidden;
   cursor: pointer;
+
   img {
     width: 100%;
     height: 100%;
   }
+
   &:hover,
   &:focus {
     img {
@@ -302,6 +326,7 @@ export default {
   right: 0;
   top: calc(50% - 14px);
   transform: translateY(-100%);
+
   .item {
     cursor: pointer;
     height: 14px;
@@ -314,6 +339,7 @@ export default {
   left: 0;
   top: calc(50% - 14px);
   transform: translateY(-100%);
+
   .item {
     cursor: pointer;
     height: 14px;
@@ -334,18 +360,21 @@ export default {
   position: absolute;
   left: 90px;
   top: 13px;
-  width: 24px;
+  width: 24x;
   height: 28px;
   align-items: center;
+
   span {
     width: 16px;
     height: 16px;
-    background: #fff;
+    border-radius: 50%;
+    background-color: #fff;
     margin-left: 13px;
     margin-right: 2px;
     display: flex;
     align-items: center;
   }
+
   .next-icon {
     width: 16px;
     height: 16px;

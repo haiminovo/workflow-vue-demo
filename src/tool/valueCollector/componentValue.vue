@@ -13,9 +13,9 @@
         :label="item.label"
         size="small"
         :value="item.value"
-        @mouseenter.native="handleMouseEnter(item.value)"
         >
         <span 
+          @mouseenter="handleMouseEnter(item.value)"
           style="float: left"
         >
           <b>{{ item.name }}</b>的{{ item.desc }}
@@ -146,7 +146,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-/deep/.el-select {
+:deep(.el-select ) {
   width: 100%;
 }
 .field-input {

@@ -4,6 +4,7 @@ import { PolylineEdge, PolylineEdgeModel, h } from '@logicflow/core'
 import logicLineNode from './logicLineNode.vue'
 import { pointFilter } from '../util/edge'
 import { NODE_HEIGHT, LINE_OFFSET, NODE_WIDTH } from '../util/constant'
+import { createElementApp } from '../util/vueMount'
 
 const DISTANCE = 12
 const ICON_HEIGHT = 16
@@ -12,18 +13,8 @@ const WORD_HEIGHT = 16
 class LogicPolyline extends PolylineEdge {
   constructor(props) {
     super(props)
-    this.vm = new Vue({
-      render: (h) =>
-        h(logicLineNode, {
-          props: {
-            model: this.props.model,
-            graphModel: this.props.graphModel,
-            properties: this.props.model.getProperties(),
-            isSelected: this.props.model.isSelected,
-            isHovered: this.props.model.isHovered
-          }
-        })
-    })
+    this.root = document.createElement('div')
+    this.vm = createElementApp(logicLineNode)
   }
   shouldUpdate() {
     const data = {
@@ -96,8 +87,23 @@ class LogicPolyline extends PolylineEdge {
     const { model } = this.props
     const id = model.id
     setTimeout(() => {
-      const addContainer = document.querySelector('#' + 'line_' + id).querySelector('.add-wrapper')
-      this.vm.$mount(addContainer)
+      const wrapper = document.querySelector('#' + 'line_' + id)
+      const addContainer = wrapper && wrapper.querySelector('.add-wrapper')
+      if (!addContainer) {
+        return
+      }
+      if (!addContainer.contains(this.root)) {
+        addContainer.innerHTML = ''
+        addContainer.appendChild(this.root)
+      }
+      this.vm.update({
+        model: this.props.model,
+        graphModel: this.props.graphModel,
+        properties: this.props.model.getProperties(),
+        isSelected: this.props.model.isSelected,
+        isHovered: this.props.model.isHovered
+      })
+      this.vm.mount(this.root)
     }, 0)
     return h(
       'foreignObject',

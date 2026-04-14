@@ -18,7 +18,7 @@
       class="add-button"
       @click="addCondition"
     >
-      <i class="el-icon-circle-plus-outline"></i>
+      <span class="condition-add-icon">+</span>
       添加条件
     </el-link>
     <el-row class="setter-footer">
@@ -42,16 +42,14 @@
 
 <script>
 import conditionItem from './conditionItem.vue'
+import { emitModelValue, getModelValue } from '../../util/modelValue'
 export default {
   props: {
     lf: Object,
     context: Object,
     current: Object,
+    modelValue: [String, Number, Boolean, Object, Array],
     value: [String, Number, Boolean, Object, Array]
-  },
-  model: {
-    prop: "value",
-    event: "change"
   },
   data () {
     return {
@@ -61,10 +59,28 @@ export default {
     }
   },
   watch: {
+    modelValue: {
+      deep: true,
+      immediate: true,
+      handler() {
+        const nv = getModelValue(this.$props)
+        if (nv && nv.conditions && nv.conditions.length) {
+          this.conditions = nv.conditions || []
+          this.combineRule = nv.combineRule || ''
+          this.combineType = nv.combineType || 1
+          this.handleCombineType()
+        } else {
+          this.conditions = []
+          this.combineRule = ''
+          this.combineType = 1
+        }
+      }
+    },
     value: {
       deep: true,
       immediate: true,
       handler (nv) {
+        if (this.modelValue !== undefined) return
         if (nv && nv.conditions && nv.conditions.length) {
           this.conditions = nv.conditions || []
           this.combineRule = nv.combineRule || ''
@@ -87,7 +103,7 @@ export default {
   methods: {
     handleConditionChange(e, index) {
       this.conditions[index] = e
-      this.$emit('change', {
+      emitModelValue(this, {
         combineRule: this.combineRule,
         conditions: this.conditions,
         combineType: this.combineType,
@@ -95,7 +111,7 @@ export default {
     },
     handleConditionDelete(index) {
       this.conditions.splice(index, 1)
-      this.$emit('change', {
+      emitModelValue(this, {
         combineRule: this.combineRule,
         conditions: this.conditions,
         combineType: this.combineType,
@@ -104,7 +120,7 @@ export default {
     },
     handleCombineTypeChange() {
       this.handleCombineType()
-      this.$emit('change', {
+      emitModelValue(this, {
         combineRule: this.combineRule,
         conditions: this.conditions,
         combineType: this.combineType,
@@ -161,11 +177,11 @@ export default {
   margin-top: 20px;
 }
 
-/deep/.el-radio__label {
+:deep(.el-radio__label ) {
   font-size: 12px;
   padding-left: 4px;
 }
-/deep/.el-radio {
+:deep(.el-radio ) {
   &:not(:last-of-type){
     margin-right: 20px;
   }
@@ -173,5 +189,12 @@ export default {
 }
 .input {
   margin-top: 10px;
+}
+.condition-add-icon {
+  display: inline-block;
+  width: 14px;
+  margin-right: 4px;
+  font-weight: 700;
+  text-align: center;
 }
 </style>

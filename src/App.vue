@@ -2,11 +2,7 @@
   <div id="app">
     <div class="organizer-panel-wrapper">
       <el-container class="organizer-container">
-        <logic-panel
-          class="logic-panel-wrapper"
-          :context="context"
-          :info="info"
-        ></logic-panel>
+        <logic-panel class="logic-panel-wrapper" :context="context" :info="info"></logic-panel>
       </el-container>
     </div>
   </div>
@@ -37,7 +33,6 @@ export default {
   width: 100vw;
   height: 100vh;
   margin: 0 auto;
-  padding: 2rem;
   font-weight: normal;
 }
 
