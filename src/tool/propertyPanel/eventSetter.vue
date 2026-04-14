@@ -25,6 +25,13 @@
 <script>
 import { emitModelValue, getModelValue } from '../../util/modelValue'
 
+const triggerEventOptions = [
+  {
+    label: 'curl触发',
+    value: 'curlTrigger'
+  }
+]
+
 export default {
   props: {
     lf: Object,
@@ -45,8 +52,11 @@ export default {
       return value.key
     },
     // 值选项
-    eventOptions () { 
-      const logic = this.current.getLogic();
+    eventOptions () {
+      if (this.current?.properties?.componentName === 'triggerEvent') {
+        return triggerEventOptions
+      }
+      const logic = this.current?.getLogic?.() || {}
       const events = logic.events
       const options = events && events.map(item => {
         return {

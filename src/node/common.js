@@ -10,9 +10,17 @@ class CommonNodeModel extends base.model {
     return this.properties.name
   }
   getNodeAbstract () {
-    const title = '数据请求'
+    let title = '数据请求'
     const content = []
-    if (this.properties && this.properties.ds) {
+    if (this.properties && this.properties.componentName === 'triggerEvent') {
+      title = '节点事件'
+      if (this.properties.event && this.properties.event.keyDefine) {
+        content.push({
+          desc: this.properties.event.keyDefine,
+          type: 'event'
+        })
+      }
+    } else if (this.properties && this.properties.ds) {
       content.push ({
         desc: this.properties.ds.name,
         type: 'common'

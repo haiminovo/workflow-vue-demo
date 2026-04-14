@@ -132,8 +132,8 @@ export default {
     });
     // 点击节点处理
     this.lf.on("node:select-click", (model) => {
-      console.log("model ===>>>", model);
       this.currentNode = model;
+      this.currentModel = model;
       const properties = model.getProperties();
       this.name = properties.name;
       switch (model.type) {
@@ -154,19 +154,20 @@ export default {
           break;
         case "common-node":
           if (properties && properties.componentName === "dataSource") {
-            // 打开数据源设置器
             this.ds = (properties && properties.ds) || {};
             this.panelType = "ds";
             this.showDrawer = true;
           } else if (properties && properties.componentName === "pageJump") {
-            // 打开页面跳转设置器
             this.pageJump = (properties && properties.pageJump) || {};
             this.panelType = "pageJump";
             this.showDrawer = true;
           } else if (properties && properties.componentName === "dataConvert") {
-            // 打开数据转换设置器
             this.dc = (properties && properties.dc) || {};
             this.panelType = "dc";
+            this.showDrawer = true;
+          } else if (properties && properties.componentName === "triggerEvent") {
+            this.event = (properties && properties.event) || {};
+            this.panelType = "event";
             this.showDrawer = true;
           }
           break;

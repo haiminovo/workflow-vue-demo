@@ -42,6 +42,11 @@ export const valueCollectorMap = {
 }
 
 export const commonNodeMap = {
+  triggerEvent: {
+    label: '触发事件',
+    value: 'triggerEvent',
+    logo: 'Bell'
+  },
   dataSource: {
     label: '请求数据',
     value: 'dataSource',
