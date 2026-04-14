@@ -17,7 +17,7 @@
         </template>
       </el-popover>
     </div>
-    <div class="node-option" v-show="showNodeActions"
+    <div class="node-option" v-show="(properties.status === 'selected' || properties.status === 'hovered') && !disabled"
       @mousedown.capture="selectNode">
       <el-tooltip class="item" effect="dark" content="复制节点" placement="top" popper-class="logic-tooltip-pop">
         <span class="option-icon" @click="copyNode" @mousedown.stop>
@@ -25,14 +25,7 @@
         </span>
       </el-tooltip>
       <el-tooltip class="item" effect="dark" content="信息概览" placement="top" popper-class="logic-tooltip-pop">
-        <el-popover
-          v-model:visible="abstractVisible"
-          placement="right"
-          width="188"
-          :offset="-10"
-          trigger="click"
-          popper-class="logic-pop"
-        >
+        <el-popover placement="right" width="188" :offset="-10" trigger="click" popper-class="logic-pop">
           <abstract-content :title="getAbstract().title" :content="getAbstract().content"
             :showButton="getAbstract().showButton" @config="goConfig()"></abstract-content>
           <template #reference>
@@ -43,17 +36,8 @@
         </el-popover>
       </el-tooltip>
       <el-tooltip class="item" effect="dark" content="删除节点" placement="top" popper-class="logic-tooltip-pop">
-        <el-popconfirm
-          v-model:visible="deleteVisible"
-          hide-icon
-          class="item"
-          title="确认删除该节点吗？"
-          placement="top"
-          width="180"
-          cancel-button-type=""
-          @confirm="deleteNode"
-          popper-class="logic-pop"
-        >
+        <el-popconfirm hide-icon class="item" title="确认删除该节点吗？" placement="top" width="180" cancel-button-type=""
+          @confirm="deleteNode" popper-class="logic-pop">
           <template #reference>
             <span class="option-icon" @mousedown.stop>
               <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_delete.png" />
@@ -63,15 +47,15 @@
       </el-tooltip>
     </div>
     <div class="node-next">
-      <span v-show="properties.status === 'selected' || properties.status === 'hovered'" @mousedown.stop="handleNext">
-        <CirclePlusFilled class="next-icon" />
+      <span v-show="properties.status === 'selected' || properties.status === 'hovered'" @mousedown.stop="handleNext"
+        class="next-icon" aria-hidden="true">
       </span>
     </div>
   </div>
 </template>
 
 <script>
-import { CirclePlusFilled, WarningFilled } from '@element-plus/icons-vue'
+import { WarningFilled } from '@element-plus/icons-vue'
 import { defaultLogo } from '../util/typeMap'
 import abstractContent from '../tool/abstractContent/index.vue'
 
@@ -87,18 +71,6 @@ export default {
   data() {
     return {
       showAddPop: false,
-      abstractVisible: false,
-      deleteVisible: false,
-    }
-  },
-  computed: {
-    showNodeActions() {
-      return !this.disabled && (
-        this.properties.status === 'selected' ||
-        this.properties.status === 'hovered' ||
-        this.abstractVisible ||
-        this.deleteVisible
-      )
     }
   },
   watch: {
@@ -178,17 +150,14 @@ export default {
       this.graphModel.eventCenter.emit(`node:copy-node`, this.model)
     },
     deleteNode() {
-      this.deleteVisible = false
       this.graphModel.eventCenter.emit(`node:delete-node`, this.model)
     },
     goConfig() {
-      this.abstractVisible = false
       this.graphModel.eventCenter.emit(`node:select-click`, this.model)
     }
   },
   components: {
     abstractContent,
-    CirclePlusFilled,
     WarningFilled
   }
 }
@@ -315,9 +284,32 @@ export default {
 }
 
 .next-icon {
-  color: #33dd89;
-  font-size: 16px;
+  position: relative;
+  display: block;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
+}
+
+.next-icon::before,
+.next-icon::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #33dd89;
+  border-radius: 1px;
+  transform: translate(-50%, -50%);
+}
+
+.next-icon::before {
+  width: 8px;
+  height: 2px;
+}
+
+.next-icon::after {
+  width: 2px;
+  height: 8px;
 }
 
 .node-option {
@@ -358,21 +350,22 @@ export default {
 .node-next {
   display: flex;
   position: absolute;
-  left: 90px;
+  left: 105px;
   top: 13px;
-  width: 24x;
+  width: 24px;
   height: 28px;
   align-items: center;
+  pointer-events: none;
 
   span {
-    width: 16px;
-    height: 16px;
     border-radius: 50%;
     background-color: #fff;
-    margin-left: 13px;
-    margin-right: 2px;
+    border: 1px solid #33dd89;
+    border-radius: 50%;
     display: flex;
     align-items: center;
+    z-index: 100;
+    pointer-events: auto;
   }
 
   .next-icon {

@@ -1,57 +1,48 @@
 <template>
   <div class="line-content" :class="isSelected && 'selected'">
-    <el-popover
-      placement="right"
-      width="200"
-      trigger="click"
-      v-model:visible="popVisible"
-      v-if="properties.condition && properties.condition && properties.condition.conditions && properties.condition.conditions.length"
-    >
+    <el-popover placement="right" width="200" trigger="click" v-model:visible="popVisible"
+      v-if="properties.condition && properties.condition && properties.condition.conditions && properties.condition.conditions.length">
       <div class="popover-content">
         <div class="condition-wrap">
           <div class="condition-title">我配置的条件</div>
           <div class="condition-content">
             <div class="condition-item" v-for="(item, index) in properties.condition.conditions" :key="index">
-              <img
-                class="icon"
-                src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/edge_condition.png"
-                alt=""
-              />
+              <img class="icon"
+                src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/edge_condition.png" alt="" />
               <span>{{ getConditionItem(item) }}</span>
             </div>
             <div class="condition-button" @click="goCondition">去配置</div>
           </div>
         </div>
         <div class="popover-item" @click="insertNode">
-          <img class="icon" src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_insert_node.png" alt="" />
+          <img class="icon"
+            src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_insert_node.png" alt="" />
           插入节点
         </div>
       </div>
       <template #reference>
         <div class="line-icon" :class="isSelected && 'selected'" @click.stop="handleIconClick">
-          <img class="icon" src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/edge_condition.png" alt="" />
+          <img class="icon"
+            src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/edge_condition.png" alt="" />
         </div>
       </template>
     </el-popover>
     <el-popover placement="right" width="100" trigger="click" v-model:visible="popVisible" v-else>
       <div class="popover-content">
         <div class="popover-item" @click="goCondition">
-          <img class="icon" src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_add_option.png" alt="" />
+          <img class="icon"
+            src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_add_option.png" alt="" />
           添加条件
         </div>
         <div class="popover-item" @click="insertNode">
-          <img class="icon" src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_insert_node.png" alt="" />
+          <img class="icon"
+            src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_insert_node.png" alt="" />
           插入节点
         </div>
       </div>
       <template #reference>
-        <div
-          class="line-icon"
-          :class="isSelected && 'selected'"
-          v-show="showLineIcon"
-          @click.stop="handleIconClick"
-        >
-          <img class="icon" src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/edge_add.png" alt="" />
+        <div class="line-icon" :class="isSelected && 'selected'" v-show="showLineIcon" @click.stop="handleIconClick">
+          <span class="plus-icon" aria-hidden="true"></span>
         </div>
       </template>
     </el-popover>
@@ -144,12 +135,16 @@ export default {
 <style scoped lang="less">
 .line-content {
   background: #fff;
+  border-radius: 50%;
+  // margin-left: 32px;
   font-family: PingFangSC-Regular;
   font-size: 12px;
   color: #303a51;
   --node-primary-color: #2961ef;
 }
+
 .line-icon {
+  position: relative;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -161,16 +156,44 @@ export default {
   color: var(--node-primary-color);
   background: rgba(41, 97, 239, 0.08);
   font-size: 8px;
-  &.selected {
-    background: #fff;
-    border: 2px solid var(--node-primary-color);
-    box-shadow: 0 0 6px 0 rgba(41, 97, 239, 0.5);
-  }
+
   .icon {
     width: 8px;
     height: 8px;
+    position: relative;
+    z-index: 1;
   }
 }
+
+.plus-icon {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 8px;
+  height: 8px;
+}
+
+.plus-icon::before,
+.plus-icon::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: var(--node-primary-color);
+  border-radius: 1px;
+  transform: translate(-50%, -50%);
+}
+
+.plus-icon::before {
+  width: 8px;
+  height: 2px;
+}
+
+.plus-icon::after {
+  width: 2px;
+  height: 8px;
+}
+
 .popover-item {
   --node-primary-color: #2961ef;
   background: #f3f6fa;
@@ -184,23 +207,28 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+
   .icon {
     margin-right: 4px;
     width: 16px;
     height: 16px;
   }
+
   &:hover {
     background: rgba(41, 97, 239, 0.08);
   }
+
   &:first-child {
     margin-bottom: 4px;
   }
 }
+
 .condition-content {
   padding: 8px 0;
   border-bottom: 1px solid #e4e7ed;
   margin-bottom: 10px;
 }
+
 .condition-title {
   line-height: 16px;
   font-weight: 500;
@@ -212,6 +240,7 @@ export default {
   line-height: 16px;
   font-weight: 500;
 }
+
 .condition-item {
   font-weight: 400;
   height: 25px;
@@ -222,11 +251,13 @@ export default {
   font-size: 12px;
   color: #303a51;
   font-weight: 400;
+
   .icon {
     margin-right: 4px;
     width: 12px;
     height: 12px;
   }
+
   span {
     display: inline-block;
     max-width: 140px;
@@ -235,6 +266,7 @@ export default {
     text-overflow: ellipsis;
   }
 }
+
 .condition-button {
   --node-primary-color: #2961ef;
   margin-top: 8px;
@@ -245,6 +277,7 @@ export default {
   border-radius: 2px;
   color: var(--node-primary-color);
   cursor: pointer;
+
   &:hover {
     opacity: 0.8;
   }
