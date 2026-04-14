@@ -4,7 +4,9 @@
     <div class="content">
       <div v-if="content && content.length">
         <div class="item" v-for="(item, index) in content" :key="index">
-          <img :src="item.type === 'event' ? eventIcon : reactionIcon" class="icon" />
+          <el-icon class="icon">
+            <component :is="getItemIcon(item.type)" />
+          </el-icon>
           <span>{{ item.desc }}</span>
         </div>
       </div>
@@ -15,6 +17,8 @@
 </template>
 
 <script>
+import { Bell, Share } from '@element-plus/icons-vue'
+
 export default {
   props: {
     text: String,
@@ -22,13 +26,14 @@ export default {
     title: String,
     showButton: Boolean
   },
-  data() {
-    return {
-      eventIcon: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_event.png',
-      reactionIcon: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_reaction.png'
-    }
+  components: {
+    Bell,
+    Share
   },
   methods: {
+    getItemIcon(type) {
+      return type === 'event' ? Bell : Share
+    },
     goConfig() {
       this.$emit('config')
     }
@@ -53,6 +58,7 @@ export default {
     margin-right: 4px;
     width: 12px;
     height: 12px;
+    font-size: 12px;
   }
   span {
     white-space: nowrap;

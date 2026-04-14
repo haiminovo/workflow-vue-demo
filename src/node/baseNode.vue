@@ -2,7 +2,9 @@
   <div class="node-wrap" :class="[properties.status, 'base', getClassName(), properties.executeStatus]">
     <div class="node-title" @mousedown="handleMousedown" @mouseup="handleMouseup">
       <span class="node-icon">
-        <img :src="getLogo()" alt="" />
+        <el-icon>
+          <component :is="getLogoComponent()" />
+        </el-icon>
       </span>
       <span class="node-name">{{ getName() }}</span>
     </div>
@@ -21,7 +23,7 @@
       @mousedown.capture="selectNode">
       <el-tooltip class="item" effect="dark" content="复制节点" placement="top" popper-class="logic-tooltip-pop">
         <span class="option-icon" @click="copyNode" @mousedown.stop>
-          <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_copy.png" />
+          <el-icon><CopyDocument /></el-icon>
         </span>
       </el-tooltip>
       <el-popover placement="right" width="188" :offset="-10" trigger="click" popper-class="logic-pop">
@@ -29,7 +31,7 @@
           :showButton="getAbstract().showButton" @config="goConfig()"></abstract-content>
         <template #reference>
           <span class="option-icon" @mousedown.stop title="信息概览">
-            <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_abstract.png" />
+            <el-icon><Tickets /></el-icon>
           </span>
         </template>
       </el-popover>
@@ -37,7 +39,7 @@
         @confirm="deleteNode" popper-class="logic-pop">
         <template #reference>
           <span class="option-icon" @mousedown.stop title="删除节点">
-            <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_delete.png" />
+            <el-icon><Delete /></el-icon>
           </span>
         </template>
       </el-popconfirm>
@@ -51,7 +53,8 @@
 </template>
 
 <script>
-import { WarningFilled } from '@element-plus/icons-vue'
+import { CopyDocument, Delete, Tickets, WarningFilled } from '@element-plus/icons-vue'
+import { getIconComponent } from '../util/iconMap'
 import { defaultLogo } from '../util/typeMap'
 import abstractContent from '../tool/abstractContent/index.vue'
 
@@ -89,6 +92,9 @@ export default {
     },
     getLogo() {
       return (this.model.getNodeLogo && this.model.getNodeLogo()) || defaultLogo
+    },
+    getLogoComponent() {
+      return getIconComponent(this.getLogo(), defaultLogo)
     },
     getClassName() {
       return (this.model.getNodeClassName && this.model.getNodeClassName()) || ''
@@ -170,6 +176,9 @@ export default {
   },
   components: {
     abstractContent,
+    CopyDocument,
+    Delete,
+    Tickets,
     WarningFilled
   }
 }
@@ -250,11 +259,9 @@ export default {
     background: var(--node-primary-color);
   }
 
-  img {
-    width: 14px;
-    height: 14px;
-    filter: drop-shadow(#fff 100px 0);
-    transform: translateX(-100px);
+  .el-icon {
+    font-size: 14px;
+    color: #fff;
   }
 }
 
@@ -281,16 +288,16 @@ export default {
   overflow: hidden;
   cursor: pointer;
 
-  img {
+  .el-icon {
     width: 100%;
     height: 100%;
+    font-size: 14px;
   }
 
   &:hover,
   &:focus {
-    img {
-      filter: drop-shadow(var(--node-primary-color) 100px 0);
-      transform: translateX(-100px);
+    .el-icon {
+      color: var(--node-primary-color);
     }
   }
 }

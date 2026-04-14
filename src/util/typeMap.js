@@ -45,25 +45,25 @@ export const commonNodeMap = {
   dataSource: {
     label: '请求数据',
     value: 'dataSource',
-    logo: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/data_load.png'
+    logo: 'DataAnalysis'
   },
   pageJump: {
     label: '页面跳转',
     value: 'pageJump',
-    logo: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/page_jump.png'
+    logo: 'Promotion'
   },
   dataConvert: {
     label: '数据转换',
     value: 'dataConvert',
-    logo: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/data_trans.png'
+    logo: 'SwitchButton'
   },
 }
 
 export const eventNodeMap = {
   pageInit: {
-    label: '页面初始化',
+    label: '流程开始',
     value: 'pageInit',
-    logo: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/page_init.png'
+    logo: 'Connection'
   }
 }
 
@@ -71,46 +71,46 @@ export const toolMap = {
   undo: {
     name: 'undo',
     desc: '返回上一步',
-    icon: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/tool_previous.png'
+    icon: 'Back'
   },
   redo: {
     name: 'redo',
     desc: '恢复下一步',
-    icon: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/tool_next.png'
+    icon: 'Right'
   },
   zoomIn: {
     name: 'zoomIn',
     desc: '画布放大',
-    icon: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/tool_zoom_in.png'
+    icon: 'ZoomIn'
   },
   zoomOut: {
     name: 'zoomOut',
     desc: '画布缩小',
-    icon: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/tool_zoom_out.png'
+    icon: 'ZoomOut'
   },
   fitView: {
     name: 'fitView',
     desc: '区域适应',
-    icon: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/tool_fullscreen.png'
+    icon: 'FullScreen'
   },
   selection: {
     name: 'selection',
     desc: '框选节点',
-    icon: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/tool_selection.png'
+    icon: 'Pointer'
   },
   beautify: {
     name: 'beautify',
     desc: '美化布局',
-    icon: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/tool_beautify.png'
+    icon: 'MagicStick'
   },
   navigation: {
     name: 'navigation',
     desc: '全图导航',
-    icon: 'https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/tool_location.png'
+    icon: 'Aim'
   }
 }
 
-export const defaultLogo = 'https://s3-gzpu.didistatic.com/tiyan-base-store/form-editor/pc/icon_anniu@2x.png'
+export const defaultLogo = 'Operation'
 
 export const requestMethodMap = [
   {

@@ -7,36 +7,31 @@
           <div class="condition-title">我配置的条件</div>
           <div class="condition-content">
             <div class="condition-item" v-for="(item, index) in properties.condition.conditions" :key="index">
-              <img class="icon"
-                src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/edge_condition.png" alt="" />
+              <el-icon class="icon"><Connection /></el-icon>
               <span>{{ getConditionItem(item) }}</span>
             </div>
             <div class="condition-button" @click="goCondition">去配置</div>
           </div>
         </div>
         <div class="popover-item" @click="insertNode">
-          <img class="icon"
-            src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_insert_node.png" alt="" />
+          <el-icon class="icon"><Promotion /></el-icon>
           插入节点
         </div>
       </div>
       <template #reference>
         <div class="line-icon" :class="isSelected && 'selected'" @click.stop="handleIconClick">
-          <img class="icon"
-            src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/edge_condition.png" alt="" />
+          <el-icon class="icon"><Connection /></el-icon>
         </div>
       </template>
     </el-popover>
     <el-popover placement="right" width="100" trigger="click" v-model:visible="popVisible" v-else>
       <div class="popover-content">
         <div class="popover-item" @click="goCondition">
-          <img class="icon"
-            src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_add_option.png" alt="" />
+          <el-icon class="icon"><CirclePlus /></el-icon>
           添加条件
         </div>
         <div class="popover-item" @click="insertNode">
-          <img class="icon"
-            src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/pop_insert_node.png" alt="" />
+          <el-icon class="icon"><Promotion /></el-icon>
           插入节点
         </div>
       </div>
@@ -50,6 +45,8 @@
 </template>
 
 <script>
+import { CirclePlus, Connection, Promotion } from '@element-plus/icons-vue'
+
 export default {
   props: {
     model: Object,
@@ -128,6 +125,11 @@ export default {
       })
       this.popVisible = false
     }
+  },
+  components: {
+    CirclePlus,
+    Connection,
+    Promotion
   }
 }
 </script>
@@ -158,8 +160,7 @@ export default {
   font-size: 8px;
 
   .icon {
-    width: 8px;
-    height: 8px;
+    font-size: 10px;
     position: relative;
     z-index: 1;
   }
@@ -210,8 +211,7 @@ export default {
 
   .icon {
     margin-right: 4px;
-    width: 16px;
-    height: 16px;
+    font-size: 16px;
   }
 
   &:hover {
@@ -254,8 +254,7 @@ export default {
 
   .icon {
     margin-right: 4px;
-    width: 12px;
-    height: 12px;
+    font-size: 12px;
   }
 
   span {

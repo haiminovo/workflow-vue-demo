@@ -1,7 +1,7 @@
 import base from './base'
 import { eventNodeMap } from '../util/typeMap'
 
-class EventNodeView extends base.view {}
+class EventNodeView extends base.view { }
 
 class EventNodeModel extends base.model {
   getOutlineStyle() {
@@ -26,19 +26,19 @@ class EventNodeModel extends base.model {
     });
     return anchors;
   }
-  getNodeName () {
+  getNodeName() {
     if (this.properties && this.properties.event && this.properties.event.keyDefine) {
       return this.properties.name + this.properties.event.keyDefine
     }
     return this.properties.name
   }
-  getNodeAbstract () {
+  getNodeAbstract() {
     const title = '节点事件'
     const content = []
     let showButton = true
     if (this.properties && this.properties.componentName === 'pageInit') {
       content.push({
-        desc: '页面初始化',
+        desc: '流程开始',
         type: 'event'
       })
       showButton = false
@@ -54,14 +54,14 @@ class EventNodeModel extends base.model {
       showButton,
     }
   }
-  getNodeLogo () {
+  getNodeLogo() {
     if (this.properties && this.properties.componentName === 'pageInit') {
       return eventNodeMap.pageInit.logo
     } else {
       return this.properties && this.properties.logo
     }
   }
-  getNodeClassName () {
+  getNodeClassName() {
     return 'event'
   }
 }

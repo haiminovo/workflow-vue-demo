@@ -6,7 +6,9 @@
       <el-menu mode="vertical" class="node-menu" :open="true" @select="addCommonNode">
         <el-menu-item v-for="(item, index) in commonNodeMap" :index="item.value" :key="index">
           <span class="menu-item-inner">
-            <img :src="item.logo" alt="" class="icon" />
+            <el-icon class="icon">
+              <component :is="getIcon(item.logo)" />
+            </el-icon>
             {{ item.label }}
           </span>
         </el-menu-item>
@@ -19,7 +21,9 @@
       <el-menu mode="vertical" class="node-menu" :open="true" @select="addCompNode">
         <el-menu-item v-for="(item, index) in compOptions" :index="item.value" :key="index">
           <span @mouseenter.stop="handleCompEnter(item.value)" class="menu-item-inner">
-            <img :src="item.logo" alt="" class="icon" />
+            <el-icon class="icon">
+              <component :is="getIcon(item.logo)" />
+            </el-icon>
             {{ item.label }}
           </span>
         </el-menu-item>
@@ -32,7 +36,9 @@
       <el-menu mode="vertical" class="node-menu" :open="true" @select="connectToNode">
         <el-menu-item v-for="(item, index) in nodeOptions" :index="item.value" :key="index">
           <span @mouseenter.stop="handleNodeEnter(item.value)" class="menu-item-inner">
-            <img :src="item.logo" alt="" class="icon" />
+            <el-icon class="icon">
+              <component :is="getIcon(item.logo)" />
+            </el-icon>
             {{ item.label }}
           </span>
         </el-menu-item>
@@ -42,6 +48,7 @@
 </template>
 
 <script>
+import { getIconComponent } from '../../util/iconMap'
 import { commonNodeMap } from '../../util/typeMap'
 
 export default {
@@ -73,6 +80,9 @@ export default {
     }
   },
   methods: {
+    getIcon(iconName) {
+      return getIconComponent(iconName)
+    },
     getModelById(id) {
       if (!id) return null
       return this.lf.getNodeModelById(id) || this.lf.getEdgeModelById(id) || null
@@ -203,9 +213,9 @@ export default {
   .icon {
     width: 14px;
     height: 14px;
+    font-size: 14px;
     margin-right: 4px;
-    filter: drop-shadow(#2961ef 100px 0);
-    transform: translateX(-100px);
+    color: #2961ef;
   }
   &::-webkit-scrollbar {
     /*滚动条整体样式*/

@@ -15,7 +15,9 @@
           :class="[currentTool===item.name && 'selected', item.disabled && 'disabled']" 
           @click.stop="handleClick(item, $event)" 
         >
-          <img :src="item.icon">
+          <el-icon>
+            <component :is="getIcon(item.icon)" />
+          </el-icon>
         </span>
       </el-tooltip>
     </div>
@@ -23,6 +25,7 @@
 </template>
 
 <script>
+import { getIconComponent } from '../../util/iconMap'
 import { toolMap } from '../../util/typeMap'
 import { EDITOR_EVENT } from '../../util/constant'
 export default {
@@ -91,6 +94,9 @@ export default {
     }
   },
   methods: {
+    getIcon(iconName) {
+      return getIconComponent(iconName)
+    },
     handleClick (item, e) {
       this.currentTool = ''
       if (item.disabled) return
@@ -177,24 +183,20 @@ export default {
     overflow: hidden;
     cursor: pointer;
     user-select: none;
-    img {
-      width: 20px;
-      height: 20px;
-      filter: drop-shadow(#303A51 100px 0);
-      transform: translateX(-100px);
+    .el-icon {
+      font-size: 20px;
+      color: #303A51;
     }
     &:hover, &.selected {
       background: #2961ef;
-      img {
-        filter: drop-shadow(#fff 100px 0);
-        transform: translateX(-100px);
+      .el-icon {
+        color: #fff;
       }
     }
     &.disabled {
       background: #fff;
-      img {
-        filter: drop-shadow(#C1C3C8 100px 0);
-        transform: translateX(-100px);
+      .el-icon {
+        color: #C1C3C8;
       }
     }
   }

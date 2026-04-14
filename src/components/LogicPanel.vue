@@ -1,18 +1,9 @@
 <template>
-  <div
-    class="logic-panel"
-    v-loading="loading"
-    element-loading-text="加载中..."
-    element-loading-background="rgba(255, 255, 255, 1)"
-  >
+  <div class="logic-panel" v-loading="loading" element-loading-text="加载中..."
+    element-loading-background="rgba(255, 255, 255, 1)">
     <div ref="container" class="logic-container"></div>
     <toolbar :lf="lf" :graph="graph"></toolbar>
-    <property-panel
-      v-if="lf"
-      :lf="lf"
-      :context="context"
-      @submit="handleSubmit"
-    ></property-panel>
+    <property-panel v-if="lf" :lf="lf" :context="context" @submit="handleSubmit"></property-panel>
   </div>
 </template>
 
@@ -405,7 +396,7 @@ export default {
         properties: {
           componentId: "page_init",
           componentName: "pageInit",
-          name: "页面初始化",
+          name: "流程开始",
         },
       };
       const reqNode = {
@@ -464,12 +455,14 @@ export default {
   padding: 12px;
   font-size: 14px;
 }
+
 .logic-panel,
 .logic-container {
   width: 100%;
   height: 100%;
   position: relative;
 }
+
 .logic-palette {
   position: absolute;
   left: 0;
@@ -478,7 +471,7 @@ export default {
 
 /*自定义锚点样式*/
 .logic-panel {
-  :deep(.custom-anchor ) {
+  :deep(.custom-anchor) {
     stroke: #2961ef;
     stroke-width: 1;
     fill: #fff;
@@ -486,34 +479,42 @@ export default {
     rx: 3;
     ry: 3;
   }
-  :deep(.custom-anchor:hover ) {
+
+  :deep(.custom-anchor:hover) {
     stroke: #2961ef;
     stroke-width: 1;
     fill: #fff;
   }
-  :deep(.lf-node-not-allow .custom-anchor:hover ) {
+
+  :deep(.lf-node-not-allow .custom-anchor:hover) {
     stroke: #999;
     fill: #d9d9d9;
     cursor: not-allowed;
   }
-  :deep(.incomming-anchor ) {
+
+  :deep(.incomming-anchor) {
     stroke: #2961ef;
     cursor: default;
   }
-  :deep(.outgoing-anchor ) {
+
+  :deep(.outgoing-anchor) {
     stroke: #2961ef;
   }
-  :deep(.lf-node-not-allow .basic-node ) {
+
+  :deep(.lf-node-not-allow .basic-node) {
     cursor: not-allowed;
   }
-  :deep(.lf-control-item i ) {
+
+  :deep(.lf-control-item i) {
     font-size: 20px;
     font-weight: 600;
   }
-  :deep(.lf-multiple-select ) {
+
+  :deep(.lf-multiple-select) {
     background: rgba(224, 80, 10, 0.2);
   }
-  :deep(.lf-grid > svg ) {
+
+  :deep(.lf-grid > svg) {
     background-image: url("../assets/img/grid.svg");
     background-size: 50px 50px;
     background-repeat: repeat;
