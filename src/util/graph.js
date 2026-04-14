@@ -221,8 +221,8 @@ class Graph {
       // const targetNode = lf.getNodeModelById(targetNodeId) // 获取原来此边之后的节点model
       // this.shiftNextNodes(targetNode, NODE_SPACE_X) // 移动此边之后的所有节点
       lf.deleteEdge(edge.id) // 删除此边
-      lf.addEdge(preEdge)
-      lf.addEdge(nextEdge)
+      this.addEdge(preEdge)
+      this.addEdge(nextEdge)
       this.layout.layout(node)
       this.selectNode(node) // 添加后默认选中该节点
     } else { // 如果是基于node插入节点，则在此node之后新增一个节点
@@ -235,7 +235,7 @@ class Graph {
         y: pos.y,
         properties
       })
-      lf.addEdge({ // 在此边的尾端插入一个新节点
+      this.addEdge({
         id: genId(10),
         sourceNodeId: nodeModel.id,
         targetNodeId: id,
@@ -302,15 +302,14 @@ class Graph {
    * 添加边
    */
   addEdge(edgeData) {
-    this.lf.addEdge(this.calcPointsList(edgeData))
+    this.lf.addEdge(this.calcPointsList(this.normalizeEdgeData(edgeData)))
   }
 
   /**
    * 连接至已有节点
    */
   connectToNode(id, model) {
-    const targetModel = this.lf.graphModel.getNodeModelById(id)
-    this.lf.addEdge({ // 在此边的尾端插入一个新节点
+    this.addEdge({
       id: genId(10),
       sourceNodeId: model.id,
       targetNodeId: id,
@@ -351,6 +350,29 @@ class Graph {
       }
     }
     return edgeData
+  }
+
+  normalizeEdgeData(edgeData) {
+    const normalized = {
+      ...edgeData
+    }
+    const sourceNode = normalized.sourceNodeId && this.lf.getNodeModelById(normalized.sourceNodeId)
+    const targetNode = normalized.targetNodeId && this.lf.getNodeModelById(normalized.targetNodeId)
+    if (sourceNode) {
+      normalized.sourceAnchorId = normalized.sourceAnchorId || `${sourceNode.id}_outgoing`
+      normalized.startPoint = {
+        x: sourceNode.x + sourceNode.width / 2,
+        y: sourceNode.y
+      }
+    }
+    if (targetNode) {
+      normalized.targetAnchorId = normalized.targetAnchorId || `${targetNode.id}_incomming`
+      normalized.endPoint = {
+        x: targetNode.x - targetNode.width / 2,
+        y: targetNode.y
+      }
+    }
+    return normalized
   }
 
   /**

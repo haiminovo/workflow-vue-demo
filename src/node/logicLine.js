@@ -189,60 +189,34 @@ class LogicPolylineModel extends PolylineEdgeModel {
     const { startPoint, endPoint } = this
     const { x: x1, y: y1 } = startPoint
     const { x: x2, y: y2 } = endPoint
-    const betterDistance = this.offset * 2
-    // 1. 起点在终点左边
-    if (x1 - x2 < -betterDistance) {
+    const sourceNode = this.graphModel.getNodeModelById(this.sourceNodeId)
+    const targetNode = this.graphModel.getNodeModelById(this.targetNodeId)
+    const sourceExitX = x1 + this.offset
+    const targetEntryX = x2 - this.offset
+    const sourceHalfHeight = (sourceNode?.height || NODE_HEIGHT) / 2
+    const targetHalfHeight = (targetNode?.height || NODE_HEIGHT) / 2
+
+    if (sourceExitX <= targetEntryX) {
       this.pointsList = pointFilter([
-        {
-          x: x1,
-          y: y1
-        },
-        {
-          x: x1 + this.offset,
-          y: y1
-        },
-        {
-          x: x1 + this.offset,
-          y: y2
-        },
-        {
-          x: x2,
-          y: y2
-        }
+        { x: x1, y: y1 },
+        { x: sourceExitX, y: y1 },
+        { x: sourceExitX, y: y2 },
+        { x: x2, y: y2 }
       ])
-      this.points = this.pointsList.map((point) => `${point.x},${point.y}`).join(' ')
-    } else if (x1 - x2 > betterDistance) {
-      // 起点在右边，终点在左边
-      this.pointsList = pointFilter([
-        {
-          x: x1,
-          y: y1
-        },
-        {
-          x: x1 + this.offset,
-          y: y1
-        },
-        {
-          x: x1 + this.offset,
-          y: y2 + NODE_HEIGHT
-        },
-        {
-          x: x2 - NODE_HEIGHT / 2,
-          y: y2 + NODE_HEIGHT
-        },
-        {
-          x: x2 - NODE_HEIGHT / 2,
-          y: y2
-        },
-        {
-          x: x2,
-          y: y2
-        }
-      ])
-      this.points = this.pointsList.map((point) => `${point.x},${point.y}`).join(' ')
     } else {
-      super.initPoints()
+      const detourY = y2 >= y1
+        ? Math.max(y1 + sourceHalfHeight, y2 + targetHalfHeight) + this.offset
+        : Math.min(y1 - sourceHalfHeight, y2 - targetHalfHeight) - this.offset
+      this.pointsList = pointFilter([
+        { x: x1, y: y1 },
+        { x: sourceExitX, y: y1 },
+        { x: sourceExitX, y: detourY },
+        { x: targetEntryX, y: detourY },
+        { x: targetEntryX, y: y2 },
+        { x: x2, y: y2 }
+      ])
     }
+    this.points = this.pointsList.map((point) => `${point.x},${point.y}`).join(' ')
   }
 }
 

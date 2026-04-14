@@ -64,7 +64,13 @@ class BaseNodeModel extends HtmlNodeModel {
     this.sourceRules.push({
       message: '只允许从右边的锚点连出',
       validate: (sourceNode, targetNode, sourceAnchor, targetAnchor) => {
-        return targetAnchor.type === 'incomming'
+        return sourceAnchor.type === 'outgoing' && targetAnchor.type === 'incomming'
+      }
+    })
+    this.targetRules.push({
+      message: '只允许连到左边的锚点',
+      validate: (sourceNode, targetNode, sourceAnchor, targetAnchor) => {
+        return sourceAnchor.type === 'outgoing' && targetAnchor.type === 'incomming'
       }
     })
   }
@@ -96,7 +102,6 @@ class BaseNodeModel extends HtmlNodeModel {
     return anchors
   }
   addNode(node, nextY = 0) {
-    const isDeep = nextY !== 0
     const nodeModel = this.graphModel.getNodeModelById(node.sourceId)
     const leftTopX = node.x + NEXT_X_DISTANCE - 50 - 10
     const leftTopY = node.y + nextY - 40 - 8
@@ -116,23 +121,19 @@ class BaseNodeModel extends HtmlNodeModel {
       y: node.y + nextY,
       properties: node.properties
     })
-    let startPoint
-    let endPoint
-    if (isDeep) {
-      startPoint = {
-        x: node.x,
-        y: node.y + nodeModel.height / 2
-      }
-      endPoint = {
-        x: newNode.x - newNode.width / 2,
-        y: newNode.y
-      }
-    }
     this.graphModel.addEdge({
       sourceNodeId: node.sourceId,
       targetNodeId: newNode.id,
-      startPoint,
-      endPoint
+      sourceAnchorId: `${node.sourceId}_outgoing`,
+      targetAnchorId: `${newNode.id}_incomming`,
+      startPoint: {
+        x: node.x + nodeModel.width / 2,
+        y: node.y
+      },
+      endPoint: {
+        x: newNode.x - newNode.width / 2,
+        y: newNode.y
+      }
     })
     this.graphModel.selectElementById(newNode.id)
     this.graphModel.showContextMenu(newNode)
