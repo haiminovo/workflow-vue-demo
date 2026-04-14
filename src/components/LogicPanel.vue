@@ -43,6 +43,7 @@ export default {
     return {
       lf: null,
       graph: null,
+      canvasGestureCleanup: null,
       isShowMenu: false,
       menuPosition: {
         x: 0,
@@ -58,10 +59,14 @@ export default {
     await waitTime(100);
 
     this.initCanvas();
+    this.initCanvasGestureGuards();
     this.initEvents();
     this.initPopover();
     this.info && this.createDefaultLogic();
     this.loading = false;
+  },
+  beforeUnmount() {
+    this.canvasGestureCleanup && this.canvasGestureCleanup();
   },
   methods: {
     // 节点拖拽到画布时的操作
@@ -133,6 +138,39 @@ export default {
 
       // REMIND: 临时将 lf 挂到 window 方便调试
       window.lf = this.lf;
+    },
+    initCanvasGestureGuards() {
+      const container = this.$refs.container;
+      if (!container) return;
+
+      const preventPageZoom = (event) => {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+        }
+      };
+      const preventGestureZoom = (event) => {
+        event.preventDefault();
+      };
+
+      container.addEventListener("wheel", preventPageZoom, {
+        passive: false,
+      });
+      container.addEventListener("gesturestart", preventGestureZoom, {
+        passive: false,
+      });
+      container.addEventListener("gesturechange", preventGestureZoom, {
+        passive: false,
+      });
+      container.addEventListener("gestureend", preventGestureZoom, {
+        passive: false,
+      });
+
+      this.canvasGestureCleanup = () => {
+        container.removeEventListener("wheel", preventPageZoom);
+        container.removeEventListener("gesturestart", preventGestureZoom);
+        container.removeEventListener("gesturechange", preventGestureZoom);
+        container.removeEventListener("gestureend", preventGestureZoom);
+      };
     },
 
     // 初始化事件
@@ -461,6 +499,7 @@ export default {
   width: 100%;
   height: 100%;
   position: relative;
+  overscroll-behavior: none;
 }
 
 .logic-palette {
