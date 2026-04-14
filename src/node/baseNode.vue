@@ -71,6 +71,8 @@ export default {
   data() {
     return {
       showAddPop: false,
+      mouseStartPoint: null,
+      mouseStartNodePoint: null,
     }
   },
   watch: {
@@ -119,13 +121,27 @@ export default {
       })
       this.selectNode()
     },
-    handleMousedown() {
-      this.mouseStartTime = new Date().getTime()
+    handleMousedown(event) {
+      this.mouseStartPoint = {
+        x: event.clientX,
+        y: event.clientY
+      }
+      this.mouseStartNodePoint = {
+        x: this.model.x,
+        y: this.model.y
+      }
     },
-    handleMouseup() {
-      const mousedownDuration = new Date().getTime() - this.mouseStartTime
-      // 非拖拽才显示抽屉
-      if (mousedownDuration < 1000) {
+    handleMouseup(event) {
+      const pointerMoved = this.mouseStartPoint
+        ? Math.abs(event.clientX - this.mouseStartPoint.x) > 4 || Math.abs(event.clientY - this.mouseStartPoint.y) > 4
+        : false
+      const nodeMoved = this.mouseStartNodePoint
+        ? Math.abs(this.model.x - this.mouseStartNodePoint.x) > 2 || Math.abs(this.model.y - this.mouseStartNodePoint.y) > 2
+        : false
+      this.mouseStartPoint = null
+      this.mouseStartNodePoint = null
+      // 只有几乎没有位移时才视为点击，避免拖拽后误触发配置
+      if (!pointerMoved && !nodeMoved) {
         setTimeout(() => {
           this.graphModel.eventCenter.emit(`node:select-click`, this.model)
         }, 100)

@@ -102,6 +102,7 @@ export default {
                 // 默认只支持删除选中连线
                 if (edges && edges.length === 1) {
                   this.lf.deleteEdge(edges[0].id);
+                  this.graph && this.graph.addHistory();
                 }
               },
             },
@@ -133,8 +134,10 @@ export default {
         lf: this.lf,
         context: this.context,
       });
-      if (!graphData || graphData.nodes.length === 0)
+      if (!graphData || graphData.nodes.length === 0) {
         this.initNode = this.graph.addInitNode();
+        this.graph.resetHistory();
+      }
       this.graph.initView();
 
       // REMIND: 临时将 lf 挂到 window 方便调试
@@ -158,6 +161,9 @@ export default {
           // this.checkRelatedComponent();
         }
       );
+      this.context.eventCenter.on(EDITOR_EVENT.LOGIC_HISTORY_CHANGE, () => {
+        this.setGraphDataToContext();
+      });
 
       // LF事件注册
       // 点击处理
@@ -180,9 +186,6 @@ export default {
       this.lf.on("node:click", ({ data }) => {
         const model = this.lf.getNodeModelById(data.id);
         this.currentModel = model;
-      });
-      this.lf.on("history:change", () => {
-        this.setGraphDataToContext();
       });
       this.lf.on("node:add-node", ({ model, type, properties }) => {
         this.graph.insertNode(model, type, properties);

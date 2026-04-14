@@ -24,9 +24,32 @@ class Graph {
       ranksep: 20,
     })
     // this.history = new History() // 操作记录
+    this.history = []
+    this.historyIndex = -1
     this.selectedNodes = []
     this.hoveredNodes = []
     this.addHistory()
+  }
+
+  cloneGraphData (graphData) {
+    return JSON.parse(JSON.stringify(graphData))
+  }
+
+  getHistoryState () {
+    return {
+      canUndo: this.historyIndex > 0,
+      canRedo: this.historyIndex < this.history.length - 1
+    }
+  }
+
+  emitHistoryChange () {
+    this.context.eventCenter.emit(EDITOR_EVENT.LOGIC_HISTORY_CHANGE, this.getHistoryState())
+  }
+
+  resetHistory (graphData = this.lf.getGraphData()) {
+    this.history = [this.cloneGraphData(graphData)]
+    this.historyIndex = 0
+    this.emitHistoryChange()
   }
 
   /**
@@ -401,42 +424,45 @@ class Graph {
    * 增加历史记录
    */
   addHistory() {
-    const graphData = this.lf.getGraphData()
-    // this.history.add(graphData)
-    // this.context.eventCenter.emit(EDITOR_EVENT.LOGIC_HISTORY_CHANGE, {
-    //   canUndo: this.history.canUndo,
-    //   canRedo: this.history.canRedo
-    // })
+    const graphData = this.cloneGraphData(this.lf.getGraphData())
+    const lastSnapshot = this.history[this.historyIndex]
+    if (lastSnapshot && JSON.stringify(lastSnapshot) === JSON.stringify(graphData)) {
+      this.emitHistoryChange()
+      return
+    }
+    this.history = this.history.slice(0, this.historyIndex + 1)
+    this.history.push(graphData)
+    this.historyIndex = this.history.length - 1
+    this.emitHistoryChange()
+  }
+
+  restoreHistory(graphData) {
+    this.selectedNodes = []
+    this.hoveredNodes = []
+    this.lf.render(this.cloneGraphData(graphData))
+    this.emitHistoryChange()
   }
 
   /**
    * 撤销
    */
   undo() {
-    // const canUndo = this.history.canUndo
-    // if (canUndo) {
-    //   const data = this.history.undo()
-    //   data && this.lf.render(data)
-    // }
-    // this.context.eventCenter.emit(EDITOR_EVENT.LOGIC_HISTORY_CHANGE, {
-    //   canUndo: this.history.canUndo,
-    //   canRedo: this.history.canRedo
-    // })
+    const { canUndo } = this.getHistoryState()
+    if (!canUndo) return
+    this.historyIndex -= 1
+    const data = this.history[this.historyIndex]
+    data && this.restoreHistory(data)
   }
 
   /**
    * 重做
    */
   redo() {
-    // const canRedo = this.history.canRedo
-    // if (canRedo) {
-    //   const data = this.history.redo()
-    //   data && this.lf.render(data)
-    // }
-    // this.context.eventCenter.emit(EDITOR_EVENT.LOGIC_HISTORY_CHANGE, {
-    //   canUndo: this.history.canUndo,
-    //   canRedo: this.history.canRedo
-    // })
+    const { canRedo } = this.getHistoryState()
+    if (!canRedo) return
+    this.historyIndex += 1
+    const data = this.history[this.historyIndex]
+    data && this.restoreHistory(data)
   }
 }
 
