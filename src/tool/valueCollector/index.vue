@@ -21,14 +21,14 @@
       </template>
     </el-dropdown>
     <div class="value-selector">
-      <option-value v-show="type === 'option'" :value="val" @change="handleChange" :options="options"></option-value>
-      <input-value v-show="type === 'input'" :value="val" @change="handleChange"></input-value>
-      <component-value v-show="type === 'component'" :value="val" :context="context" @change="handleChange"></component-value>
-      <component-prop-value v-show="type === 'componentProp'" :value="val" :context="context" @change="handleChange"></component-prop-value>
-      <data-source-value v-show="type === 'dataSource'" :value="val" :context="context" :lf="lf" @change="handleChange"></data-source-value>
-      <data-convert-value v-show="type === 'dataConvert'" :value="val" :context="context" :lf="lf" @change="handleChange"></data-convert-value>
-      <url-param-value v-show="type === 'urlParam'" :value="val" @change="handleChange"></url-param-value>
-      <init-param-value v-show="type === 'initParam'" :value="val" @change="handleChange"></init-param-value>
+      <option-value v-if="type === 'option'" :value="val" @change="handleChange" :options="options"></option-value>
+      <input-value v-else-if="type === 'input'" :value="val" @change="handleChange"></input-value>
+      <component-value v-else-if="type === 'component'" :value="val" :context="context" @change="handleChange"></component-value>
+      <component-prop-value v-else-if="type === 'componentProp'" :value="val" :context="context" @change="handleChange"></component-prop-value>
+      <data-source-value v-else-if="type === 'dataSource'" :value="val" :context="context" :lf="lf" @change="handleChange"></data-source-value>
+      <data-convert-value v-else-if="type === 'dataConvert'" :value="val" :context="context" :lf="lf" @change="handleChange"></data-convert-value>
+      <url-param-value v-else-if="type === 'urlParam'" :value="val" @change="handleChange"></url-param-value>
+      <init-param-value v-else-if="type === 'initParam'" :value="val" @change="handleChange"></init-param-value>
     </div>
   </div>
 </template>

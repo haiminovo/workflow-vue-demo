@@ -127,8 +127,8 @@ export default {
       this.currentEdge = model;
       const properties = model.getProperties();
       this.condition = properties.condition || {};
-      this.showDrawer = true;
       this.panelType = "condition";
+      this.showDrawer = true;
     });
     // 点击节点处理
     this.lf.on("node:select-click", (model) => {

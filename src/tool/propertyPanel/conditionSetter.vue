@@ -111,12 +111,12 @@ export default {
     },
     handleConditionDelete(index) {
       this.conditions.splice(index, 1)
+      this.handleCombineType()
       emitModelValue(this, {
         combineRule: this.combineRule,
         conditions: this.conditions,
         combineType: this.combineType,
       })
-      this.handleCombineType()
     },
     handleCombineTypeChange() {
       this.handleCombineType()
