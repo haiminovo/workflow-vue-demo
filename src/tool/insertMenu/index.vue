@@ -42,8 +42,7 @@
 </template>
 
 <script>
-import { commonNodeMap, defaultLogo } from '../../util/typeMap'
-import { getNodeName } from '../../util/node'
+import { commonNodeMap } from '../../util/typeMap'
 
 export default {
   props: {
@@ -52,8 +51,12 @@ export default {
     context: Object,
     graph: Object,
     position: Object,
-    model: Object,
-    showConnectBlock: Boolean
+    modelId: String,
+    showConnectBlock: Boolean,
+    nodeOptions: {
+      type: Array,
+      default: () => []
+    }
   },
   data() {
     return {
@@ -67,28 +70,12 @@ export default {
     compOptions() {
       const options = []
       return options
-    },
-    // 获取页面组件节点
-    nodeOptions() {
-      const data = this.lf.getGraphData()
-      const { nodes } = data
-      const options = []
-      nodes.forEach((node) => {
-        if (node.type === 'event-node') return // 不允许连接到事件节点
-        const label = (node.properties && node.properties.name) || '未知'
-        const logo = (node.properties && node.properties.logo) || defaultLogo
-        options.push({
-          value: node.id,
-          label,
-          logo
-        })
-      })
-      return options
     }
   },
   methods: {
     hide() {
-      const key = this.model.id
+      const key = this.modelId
+      if (!key) return
       setTimeout(() => {
         this.lf.graphModel.popover.hide(key)
       }, 50)
@@ -133,8 +120,8 @@ export default {
           logo: commonNodeMap[e].logo
         }
       }
-      if (this.model) {
-        nodeData.model = this.model
+      if (this.modelId) {
+        nodeData.model = this.lf.getNodeModelById(this.modelId)
         this.lf.graphModel.eventCenter.emit('node:add-node', nodeData)
       } else {
         this.addNodeInPosition(nodeData)
@@ -157,15 +144,16 @@ export default {
           logo
         }
       }
-      if (this.model) {
-        nodeData.model = this.model
+      if (this.modelId) {
+        nodeData.model = this.lf.getNodeModelById(this.modelId)
         this.lf.graphModel.eventCenter.emit(`node:add-node`, nodeData)
       }
     },
     // 连接至已有节点
     connectToNode(e) {
       this.hide()
-      this.graph.connectToNode(e, this.model)
+      const model = this.modelId && this.lf.getNodeModelById(this.modelId)
+      model && this.graph.connectToNode(e, model)
     }
   }
 }

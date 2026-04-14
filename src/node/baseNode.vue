@@ -24,27 +24,23 @@
           <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_copy.png" />
         </span>
       </el-tooltip>
-      <el-tooltip class="item" effect="dark" content="信息概览" placement="top" popper-class="logic-tooltip-pop">
-        <el-popover placement="right" width="188" :offset="-10" trigger="click" popper-class="logic-pop">
-          <abstract-content :title="getAbstract().title" :content="getAbstract().content"
-            :showButton="getAbstract().showButton" @config="goConfig()"></abstract-content>
-          <template #reference>
-            <span class="option-icon" @mousedown.stop>
-              <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_abstract.png" />
-            </span>
-          </template>
-        </el-popover>
-      </el-tooltip>
-      <el-tooltip class="item" effect="dark" content="删除节点" placement="top" popper-class="logic-tooltip-pop">
-        <el-popconfirm hide-icon class="item" title="确认删除该节点吗？" placement="top" width="180" cancel-button-type=""
-          @confirm="deleteNode" popper-class="logic-pop">
-          <template #reference>
-            <span class="option-icon" @mousedown.stop>
-              <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_delete.png" />
-            </span>
-          </template>
-        </el-popconfirm>
-      </el-tooltip>
+      <el-popover placement="right" width="188" :offset="-10" trigger="click" popper-class="logic-pop">
+        <abstract-content :title="getAbstract().title" :content="getAbstract().content"
+          :showButton="getAbstract().showButton" @config="goConfig()"></abstract-content>
+        <template #reference>
+          <span class="option-icon" @mousedown.stop title="信息概览">
+            <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_abstract.png" />
+          </span>
+        </template>
+      </el-popover>
+      <el-popconfirm hide-icon class="item" title="确认删除该节点吗？" placement="top" width="180" cancel-button-type=""
+        @confirm="deleteNode" popper-class="logic-pop">
+        <template #reference>
+          <span class="option-icon" @mousedown.stop title="删除节点">
+            <img src="https://s3-gzpu.didistatic.com/tiyan-base-store/suda/organizer/icons/node_delete.png" />
+          </span>
+        </template>
+      </el-popconfirm>
     </div>
     <div class="node-next">
       <span v-show="properties.status === 'selected' || properties.status === 'hovered'" @mousedown.stop="handleNext"

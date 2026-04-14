@@ -268,14 +268,28 @@ export default {
       popover.registerPopover("tip1", {
         // TODO: 后续支持传递属性
         render: (rootEl, data) => {
+          const graphData = JSON.parse(JSON.stringify(this.lf.getGraphData()));
+          const nodeOptions = (graphData.nodes || []).reduce((options, node) => {
+            if (node.type === "event-node") return options;
+            options.push({
+              value: node.id,
+              label: (node.properties && node.properties.name) || "未知",
+              logo: (node.properties && node.properties.logo) || defaultLogo,
+            });
+            return options;
+          }, []);
           const app = createElementApp(insertMenu, {
             lf: this.lf,
             context: this.context,
             graph: this.graph,
-            model: this.currentModel,
+            modelId: this.currentModel && this.currentModel.id,
+            nodeOptions,
             showConnectBlock: data.props.showConnectBlock,
           });
           app.mount(rootEl);
+          return () => {
+            app.unmount();
+          };
         },
       });
     },

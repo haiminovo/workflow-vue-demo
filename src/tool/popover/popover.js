@@ -80,7 +80,10 @@ export default class Popover {
       throw new Error("未找到需要弹框的内容");
     }
     if (item.render) {
-      item.render(rootEl, popoverItem);
+      const cleanup = item.render(rootEl, popoverItem);
+      if (typeof cleanup === 'function') {
+        popoverItem.__cleanup = cleanup;
+      }
     } else if (item.element) {
       rootEl.appendChild(element);
     }
@@ -94,6 +97,8 @@ export default class Popover {
     this.renderedCollection.set(popoverItem.__id, popoverItem);
   }
   destroyPopover(__id) {
+    const renderedItem = this.renderedCollection.get(__id);
+    renderedItem && renderedItem.__cleanup && renderedItem.__cleanup();
     this.renderedCollection.delete(__id);
     if (!this.renderedCollection.has(__id + "__popover")) {
       const floating = this.floatingMap.get(__id);
