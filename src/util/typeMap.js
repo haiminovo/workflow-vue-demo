@@ -112,6 +112,11 @@ export const toolMap = {
     name: 'navigation',
     desc: '全图导航',
     icon: 'Aim'
+  },
+  print: {
+    name: 'print',
+    desc: '打印画布数据',
+    icon: 'Tickets'
   }
 }
 

@@ -128,7 +128,12 @@ export default {
           this.currentTool = type
           const position = this.lf.getPointByClient(e.x, e.y)
           this.lf.extension.miniMap.show(position.domOverlayPosition.x - 120, 40)
-          break;   
+          break;
+        case 'print':
+          if (this.lf) {
+            console.log('logic graph data:', this.lf.getGraphData())
+          }
+          break;
       }
     }
   }
