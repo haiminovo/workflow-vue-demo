@@ -103,11 +103,7 @@ export default {
       const type = item.name
       switch (type) {
         case 'beautify':
-          this.lf.extension.dagre && this.lf.extension.dagre.layout({
-            nodesep: 2,
-            ranksep: 20,
-            begin: [100, 100],
-          });
+          this.graph && this.graph.beautify()
           break;
         case 'redo':
           this.graph &&this.graph.redo()

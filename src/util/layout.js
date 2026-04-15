@@ -6,6 +6,7 @@
 
 import { DagreLayout } from '@antv/layout'
 import { PATH_SPACE_Y } from './constant'
+import { createOrthogonalRoute } from './edge'
 
 class Layout {
   constructor (lf, option = {}) {
@@ -132,12 +133,14 @@ class Layout {
         })
       }
     }
+    const backwardLaneMap = this.buildBackwardLaneMap(newGraphData.edges, newGraphData.nodes, 24)
+    const forwardChannelMap = this.buildForwardChannelMap(newGraphData.edges, newGraphData.nodes, 24)
     const newEdges = []
     newGraphData.edges.forEach(edge => {
       // @ts-ignore: pass edge data
       const model = this.lf.getEdgeModelById(edge.id)
       const data = model.getData();
-      data.pointsList = this.calcPointsList(model, newGraphData.nodes);
+      data.pointsList = this.calcPointsList(model, newGraphData.nodes, backwardLaneMap, forwardChannelMap);
       if (data.pointsList) {
         const first = data.pointsList[0];
         const last = data.pointsList[data.pointsList.length - 1];
@@ -184,11 +187,23 @@ class Layout {
     const { nodes } = path
     // 过滤出连接至另一条路径的边
     const pathNodeMap = {}
+    const nodeOrderMap = {}
     nodes.forEach(node => {
       pathNodeMap[node.id] = node
+      nodeOrderMap[node.id] = Object.keys(nodeOrderMap).length
     })
     const spEdges = path.edges.filter(item => !pathNodeMap[item.targetNodeId])
-    const edges = path.edges.filter(item => pathNodeMap[item.targetNodeId])
+    const pathEdges = path.edges.filter(item => pathNodeMap[item.targetNodeId])
+    const edges = pathEdges.filter((edge) => {
+      const sourceIndex = nodeOrderMap[edge.sourceNodeId]
+      const targetIndex = nodeOrderMap[edge.targetNodeId]
+      return sourceIndex < targetIndex
+    })
+    const deferredEdges = pathEdges.filter((edge) => {
+      const sourceIndex = nodeOrderMap[edge.sourceNodeId]
+      const targetIndex = nodeOrderMap[edge.targetNodeId]
+      return sourceIndex >= targetIndex
+    })
     const layoutData = layoutInstance.layout({
       nodes: nodes.map((node) => ({
         id: node.id,
@@ -209,6 +224,12 @@ class Layout {
       target: edge.targetNodeId,
       model: edge,
     }))
+    const deferredEdgesData = deferredEdges.map((edge) => ({
+      source: edge.sourceNodeId,
+      target: edge.targetNodeId,
+      model: edge,
+    }))
+    layoutData.edges.push(...deferredEdgesData)
     layoutData.edges.push(...spEdgesData)
     return layoutData
   }
@@ -298,100 +319,250 @@ class Layout {
     return allPoints;
   }
 
-  calcPointsList(model, nodes) {
+  getNodesBetweenX(nodes, startX, endX) {
+    const minX = Math.min(startX, endX)
+    const maxX = Math.max(startX, endX)
+    return nodes.filter((node) => node.x >= minX && node.x <= maxX)
+  }
+
+  getBackwardRouteY(sourceNodeData, targetNodeData, sourceNodeModel, targetNodeModel, nodes, offset) {
+    const corridorNodes = this.getNodesBetweenX(nodes, sourceNodeData.x, targetNodeData.x)
+    const bottomY = corridorNodes.reduce((value, node) => {
+      const nodeModel = this.lf.getNodeModelById(node.id)
+      const halfHeight = (nodeModel?.height || node.height || 0) / 2
+      return Math.max(value, node.y + halfHeight)
+    }, Math.max(
+      sourceNodeData.y + sourceNodeModel.height / 2,
+      targetNodeData.y + targetNodeModel.height / 2,
+    ))
+    const topY = corridorNodes.reduce((value, node) => {
+      const nodeModel = this.lf.getNodeModelById(node.id)
+      const halfHeight = (nodeModel?.height || node.height || 0) / 2
+      return Math.min(value, node.y - halfHeight)
+    }, Math.min(
+      sourceNodeData.y - sourceNodeModel.height / 2,
+      targetNodeData.y - targetNodeModel.height / 2,
+    ))
+
+    const routeBelowY = bottomY + offset
+    const routeAboveY = topY - offset
+    const sameRow = Math.abs(sourceNodeData.y - targetNodeData.y) < offset
+    const belowCost = Math.abs(routeBelowY - sourceNodeData.y) + Math.abs(routeBelowY - targetNodeData.y)
+    const aboveCost = Math.abs(sourceNodeData.y - routeAboveY) + Math.abs(targetNodeData.y - routeAboveY)
+
+    if (sameRow) {
+      return routeAboveY
+    }
+
+    return aboveCost <= belowCost ? routeAboveY : routeBelowY
+  }
+
+  buildBackwardLaneMap(edges, nodes, offset) {
+    const nodeMap = {}
+    nodes.forEach((node) => {
+      nodeMap[node.id] = node
+    })
+
+    const candidates = edges
+      .map((edge) => {
+        const sourceNodeData = nodeMap[edge.sourceNodeId]
+        const targetNodeData = nodeMap[edge.targetNodeId]
+        if (!sourceNodeData || !targetNodeData || sourceNodeData.x <= targetNodeData.x) {
+          return null
+        }
+        const sourceNodeModel = this.lf.getNodeModelById(edge.sourceNodeId)
+        const targetNodeModel = this.lf.getNodeModelById(edge.targetNodeId)
+        if (!sourceNodeModel || !targetNodeModel) {
+          return null
+        }
+        const baseRouteY = this.getBackwardRouteY(
+          sourceNodeData,
+          targetNodeData,
+          sourceNodeModel,
+          targetNodeModel,
+          nodes,
+          offset + 8,
+        )
+        const side = baseRouteY < Math.min(sourceNodeData.y, targetNodeData.y) ? 'top' : 'bottom'
+        return {
+          edgeId: edge.id,
+          minX: targetNodeData.x,
+          maxX: sourceNodeData.x,
+          side,
+          baseRouteY,
+        }
+      })
+      .filter(Boolean)
+      .sort((a, b) => (b.maxX - b.minX) - (a.maxX - a.minX))
+
+    const laneMap = {}
+    const laneGap = offset
+    const lanes = {
+      top: [],
+      bottom: []
+    }
+
+    candidates.forEach((candidate) => {
+      const sideLanes = lanes[candidate.side]
+      let laneIndex = sideLanes.findIndex((segments) => {
+        return !segments.some((segment) => (
+          candidate.minX <= segment.maxX && candidate.maxX >= segment.minX
+        ))
+      })
+
+      if (laneIndex === -1) {
+        laneIndex = sideLanes.length
+        sideLanes.push([])
+      }
+
+      sideLanes[laneIndex].push({
+        minX: candidate.minX,
+        maxX: candidate.maxX
+      })
+
+      laneMap[candidate.edgeId] = {
+        routeY: candidate.side === 'top'
+          ? candidate.baseRouteY - laneGap * laneIndex
+          : candidate.baseRouteY + laneGap * laneIndex
+      }
+    })
+
+    return laneMap
+  }
+
+  getLaneShift(index) {
+    if (index === 0) return 0
+    const step = Math.ceil(index / 2)
+    return index % 2 === 1 ? -step : step
+  }
+
+  buildForwardChannelMap(edges, nodes, offset) {
+    const nodeMap = {}
+    nodes.forEach((node) => {
+      nodeMap[node.id] = node
+    })
+
+    const candidates = edges
+      .map((edge) => {
+        const sourceNodeData = nodeMap[edge.sourceNodeId]
+        const targetNodeData = nodeMap[edge.targetNodeId]
+        if (!sourceNodeData || !targetNodeData || sourceNodeData.x >= targetNodeData.x) {
+          return null
+        }
+        const sourceNodeModel = this.lf.getNodeModelById(edge.sourceNodeId)
+        const targetNodeModel = this.lf.getNodeModelById(edge.targetNodeId)
+        if (!sourceNodeModel || !targetNodeModel) {
+          return null
+        }
+
+        const startPoint = {
+          x: sourceNodeData.x + sourceNodeModel.width / 2,
+          y: sourceNodeData.y,
+        }
+        const endPoint = {
+          x: targetNodeData.x - targetNodeModel.width / 2,
+          y: targetNodeData.y,
+        }
+        const sourceExitX = startPoint.x + offset
+        const targetEntryX = endPoint.x - offset
+        if (sourceExitX > targetEntryX) {
+          return null
+        }
+
+        return {
+          edgeId: edge.id,
+          sourceExitX,
+          targetEntryX,
+          minY: Math.min(startPoint.y, endPoint.y),
+          maxY: Math.max(startPoint.y, endPoint.y),
+          baseMidX: startPoint.x + Math.max((endPoint.x - startPoint.x) / 2, offset)
+        }
+      })
+      .filter(Boolean)
+      .sort((a, b) => (b.targetEntryX - b.sourceExitX) - (a.targetEntryX - a.sourceExitX))
+
+    const lanes = []
+    const channelMap = {}
+    const laneGap = Math.max(16, Math.floor(offset / 2))
+
+    candidates.forEach((candidate) => {
+      let laneIndex = lanes.findIndex((segments) => {
+        return !segments.some((segment) => {
+          const xOverlap = candidate.sourceExitX <= segment.targetEntryX && candidate.targetEntryX >= segment.sourceExitX
+          const yOverlap = candidate.minY <= segment.maxY && candidate.maxY >= segment.minY
+          return xOverlap && yOverlap
+        })
+      })
+
+      if (laneIndex === -1) {
+        laneIndex = lanes.length
+        lanes.push([])
+      }
+
+      lanes[laneIndex].push({
+        sourceExitX: candidate.sourceExitX,
+        targetEntryX: candidate.targetEntryX,
+        minY: candidate.minY,
+        maxY: candidate.maxY
+      })
+
+      const shift = this.getLaneShift(laneIndex) * laneGap
+      channelMap[candidate.edgeId] = {
+        midX: Math.max(
+          candidate.sourceExitX,
+          Math.min(candidate.baseMidX + shift, candidate.targetEntryX)
+        )
+      }
+    })
+
+    return channelMap
+  }
+
+  calcPointsList(model, nodes, backwardLaneMap = {}, forwardChannelMap = {}) {
     // 在节点确认从左向右后，通过计算来保证节点连线清晰。
     // TODO: 避障
-    const pointsList = [];
     const offset = model.offset || 50
     if (this.option.rankdir === 'LR' && model.modelType === 'polyline-edge') {
       const sourceNodeModel = this.lf.getNodeModelById(model.sourceNodeId);
       const targetNodeModel = this.lf.getNodeModelById(model.targetNodeId);
       const newSourceNodeData = nodes.find(node => node.id === model.sourceNodeId);
       const newTargetNodeData = nodes.find(node => node.id === model.targetNodeId);
+      if (!sourceNodeModel || !targetNodeModel || !newSourceNodeData || !newTargetNodeData) {
+        return undefined
+      }
+
+      const startPoint = {
+        x: newSourceNodeData.x + sourceNodeModel.width / 2,
+        y: newSourceNodeData.y,
+      }
+      const endPoint = {
+        x: newTargetNodeData.x - targetNodeModel.width / 2,
+        y: newTargetNodeData.y,
+      }
+
       if (newSourceNodeData.x < newTargetNodeData.x) {
-        if (newSourceNodeData.y > newTargetNodeData.y) {
-          pointsList.push({
-            x: newSourceNodeData.x + sourceNodeModel.width / 2,
-            y: newSourceNodeData.y,
-          });
-          pointsList.push({
-            x: newTargetNodeData.x - targetNodeModel.width / 2 - offset,
-            y: newSourceNodeData.y,
-          });
-          pointsList.push({
-            x: newTargetNodeData.x - targetNodeModel.width / 2 - offset,
-            y: newTargetNodeData.y,
-          });
-          pointsList.push({
-            x: newTargetNodeData.x - targetNodeModel.width / 2,
-            y: newTargetNodeData.y,
-          });
-        } else {
-          pointsList.push({
-            x: newSourceNodeData.x + sourceNodeModel.width / 2,
-            y: newSourceNodeData.y,
-          });
-          pointsList.push({
-            x: newSourceNodeData.x + sourceNodeModel.width / 2 + offset,
-            y: newSourceNodeData.y,
-          });
-          pointsList.push({
-            x: newSourceNodeData.x + sourceNodeModel.width / 2 + offset,
-            y: newTargetNodeData.y,
-          });
-          pointsList.push({
-            x: newTargetNodeData.x - targetNodeModel.width / 2,
-            y: newTargetNodeData.y,
-          });
-        }
-        return this.pointFilter(pointsList);
+        const middleX = forwardChannelMap[model.id]?.midX
+          ?? (startPoint.x + Math.max((endPoint.x - startPoint.x) / 2, offset))
+        return createOrthogonalRoute({
+          startPoint,
+          endPoint,
+          sourceNode: sourceNodeModel,
+          targetNode: targetNodeModel,
+          offset,
+          midX: middleX
+        })
       }
       // 向回连线
       if (newSourceNodeData.x > newTargetNodeData.x) {
-        if (newSourceNodeData.y >= newTargetNodeData.y) {
-          pointsList.push({
-            x: newSourceNodeData.x + sourceNodeModel.width / 2,
-            y: newSourceNodeData.y,
-          });
-          pointsList.push({
-            x: newSourceNodeData.x + sourceNodeModel.width / 2 + offset,
-            y: newSourceNodeData.y,
-          });
-          pointsList.push({
-            x: newSourceNodeData.x + sourceNodeModel.width / 2 + offset,
-            y: newTargetNodeData.y + offset,
-          });
-          pointsList.push({
-            x: newTargetNodeData.x - targetNodeModel.width / 2 - offset,
-            y: newTargetNodeData.y + offset,
-          });
-          pointsList.push({
-            x: newTargetNodeData.x - targetNodeModel.width / 2 - offset,
-            y: newTargetNodeData.y,
-          });
-          pointsList.push({
-            x: newTargetNodeData.x - targetNodeModel.width / 2,
-            y: newTargetNodeData.y,
-          });
-        } else {
-          pointsList.push({
-            x: newSourceNodeData.x,
-            y: newSourceNodeData.y - sourceNodeModel.height / 2,
-          });
-          pointsList.push({
-            x: newSourceNodeData.x,
-            y: newSourceNodeData.y - sourceNodeModel.height / 2 - offset,
-          });
-          pointsList.push({
-            x: newTargetNodeData.x,
-            y: newSourceNodeData.y - sourceNodeModel.height / 2 - offset,
-          });
-          pointsList.push({
-            x: newTargetNodeData.x,
-            y: newTargetNodeData.y - targetNodeModel.height / 2,
-          });
-        }
-        return this.pointFilter(pointsList);
+        const lane = backwardLaneMap[model.id]
+        return createOrthogonalRoute({
+          startPoint,
+          endPoint,
+          sourceNode: sourceNodeModel,
+          targetNode: targetNodeModel,
+          offset,
+          detourY: lane?.routeY
+        })
       }
     }
     return undefined;

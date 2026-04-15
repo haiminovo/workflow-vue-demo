@@ -5,12 +5,13 @@
  */
 
 import { genId, genStartPos, genNewNodePos } from './calculate'
-import { NODE_SPACE_Y, NODE_WIDTH, NODE_HEIGHT, GRAPH_START_X, GRAPH_START_Y, EDITOR_EVENT } from './constant'
+import { NODE_SPACE_Y, NODE_WIDTH, NODE_HEIGHT, GRAPH_START_X, GRAPH_START_Y, EDITOR_EVENT, LINE_OFFSET } from './constant'
 import { getNodeName } from './node'
 import event from '../node/event'
 import logicLine from '../node/logicLine'
 import { eventNodeMap, defaultLogo } from './typeMap'
 import Layout from './layout'
+import { createOrthogonalRoute } from './edge'
 //  import { History } from '@didi/suda-utils'
 
 class Graph {
@@ -327,26 +328,15 @@ class Graph {
     if (!edgeData.pointsList || edgeData.pointsList.length === 0) {
       const startNode = lf.getNodeModelById(edgeData.sourceNodeId)
       const endNode = lf.getNodeModelById(edgeData.targetNodeId)
-      // 如果开始节点在结束节点右边，则算一个节点连线
-      if (startNode.x > endNode.x) {
-        edgeData.pointsList = [
-          {
-            x: endNode.x + 75,
-            y: endNode.y
-          },
-          {
-            x: endNode.x + 75,
-            y: endNode.y - 150
-          },
-          {
-            x: startNode.x - 75,
-            y: startNode.y
-          },
-          {
-            x: startNode.x - 75,
-            y: startNode.y - 150
-          }
-        ]
+      if (startNode && endNode && edgeData.startPoint && edgeData.endPoint) {
+        edgeData.pointsList = createOrthogonalRoute({
+          startPoint: edgeData.startPoint,
+          endPoint: edgeData.endPoint,
+          sourceNode: startNode,
+          targetNode: endNode,
+          offset: LINE_OFFSET,
+          fallbackHeight: NODE_HEIGHT
+        })
       }
     }
     return edgeData
@@ -441,6 +431,19 @@ class Graph {
     const { nodes } = this.lf.getGraphData()
     const rect = this.layout.getNodesRect(nodes)
     this.lf.graphModel.transformModel.translate(-rect.minX + GRAPH_START_X, -rect.minY + GRAPH_START_Y)
+  }
+
+  beautify() {
+    const { nodes } = this.lf.graphModel
+    if (!nodes || nodes.length === 0) return
+
+    const startNodes = nodes
+      .filter((node) => node.type === event.type)
+      .sort((a, b) => a.y - b.y)
+
+    const targetNode = startNodes[0] || nodes[0]
+    this.layout.layout(targetNode)
+    this.addHistory()
   }
 
   /**

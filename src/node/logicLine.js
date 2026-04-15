@@ -2,7 +2,7 @@
 
 import { PolylineEdge, PolylineEdgeModel, h } from '@logicflow/core'
 import logicLineNode from './logicLineNode.vue'
-import { pointFilter } from '../util/edge'
+import { pointFilter, createOrthogonalRoute } from '../util/edge'
 import { NODE_HEIGHT, LINE_OFFSET, NODE_WIDTH } from '../util/constant'
 import { createElementApp } from '../util/vueMount'
 
@@ -57,27 +57,22 @@ class LogicPolyline extends PolylineEdge {
     } else {
       const lastPoint = pointsList[pointsList.length - 1]
       const lastPrePoint = pointsList[pointsList.length - 2]
-      // let maxWidth = Math.max(Math.abs(lastPoint.x - lastPrePoint.x), Math.abs(lastPoint.y - lastPrePoint.y));
       width = Math.abs(lastPoint.x - lastPrePoint.x)
       height = Math.abs(lastPoint.y - lastPrePoint.y)
       direction = ''
       if (lastPoint.x < lastPrePoint.x) {
-        // 箭头向左
         direction = 'row'
         positionData.x = lastPoint.x + DISTANCE
         positionData.y = lastPoint.y - ICON_HEIGHT / 2
       } else if (lastPoint.y < lastPrePoint.y) {
-        // 箭头向上
         direction = 'column'
         positionData.x = lastPoint.x - ICON_WIDTH / 2
         positionData.y = lastPoint.y + DISTANCE + ICON_HEIGHT / 2
       } else if (lastPoint.y > lastPrePoint.y) {
-        // 箭头向下
         direction = 'column-reverse'
         positionData.x = lastPoint.x - ICON_WIDTH / 2
         positionData.y = lastPoint.y - DISTANCE - ICON_HEIGHT / 2 - WORD_HEIGHT
       } else {
-        // 箭头向右
         direction = 'row-reverse'
         positionData.x = lastPoint.x - DISTANCE - width
         positionData.y = lastPoint.y - ICON_HEIGHT / 2
@@ -126,6 +121,25 @@ class LogicPolyline extends PolylineEdge {
 }
 
 class LogicPolylineModel extends PolylineEdgeModel {
+  normalizeAnchoredPoints(pointsList = []) {
+    const normalized = []
+    const appendPoint = (point) => {
+      if (!point) return
+      const lastPoint = normalized[normalized.length - 1]
+      if (lastPoint && lastPoint.x === point.x && lastPoint.y === point.y) return
+      normalized.push({
+        x: point.x,
+        y: point.y
+      })
+    }
+
+    appendPoint(this.startPoint)
+    pointsList.forEach((point) => appendPoint(point))
+    appendPoint(this.endPoint)
+
+    return pointFilter(normalized)
+  }
+
   initEdgeData(data) {
     super.initEdgeData(data)
     this.offset = LINE_OFFSET
@@ -183,6 +197,7 @@ class LogicPolylineModel extends PolylineEdgeModel {
   }
   initPoints() {
     if (this.pointsList && this.pointsList.length > 0) {
+      this.pointsList = this.normalizeAnchoredPoints(this.pointsList)
       this.points = this.pointsList.map((point) => `${point.x},${point.y}`).join(' ')
       return
     }
@@ -191,31 +206,14 @@ class LogicPolylineModel extends PolylineEdgeModel {
     const { x: x2, y: y2 } = endPoint
     const sourceNode = this.graphModel.getNodeModelById(this.sourceNodeId)
     const targetNode = this.graphModel.getNodeModelById(this.targetNodeId)
-    const sourceExitX = x1 + this.offset
-    const targetEntryX = x2 - this.offset
-    const sourceHalfHeight = (sourceNode?.height || NODE_HEIGHT) / 2
-    const targetHalfHeight = (targetNode?.height || NODE_HEIGHT) / 2
-
-    if (sourceExitX <= targetEntryX) {
-      this.pointsList = pointFilter([
-        { x: x1, y: y1 },
-        { x: sourceExitX, y: y1 },
-        { x: sourceExitX, y: y2 },
-        { x: x2, y: y2 }
-      ])
-    } else {
-      const detourY = y2 >= y1
-        ? Math.max(y1 + sourceHalfHeight, y2 + targetHalfHeight) + this.offset
-        : Math.min(y1 - sourceHalfHeight, y2 - targetHalfHeight) - this.offset
-      this.pointsList = pointFilter([
-        { x: x1, y: y1 },
-        { x: sourceExitX, y: y1 },
-        { x: sourceExitX, y: detourY },
-        { x: targetEntryX, y: detourY },
-        { x: targetEntryX, y: y2 },
-        { x: x2, y: y2 }
-      ])
-    }
+    this.pointsList = createOrthogonalRoute({
+      startPoint,
+      endPoint,
+      sourceNode,
+      targetNode,
+      offset: this.offset,
+      fallbackHeight: NODE_HEIGHT
+    })
     this.points = this.pointsList.map((point) => `${point.x},${point.y}`).join(' ')
   }
 }
